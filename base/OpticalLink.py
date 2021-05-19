@@ -1,16 +1,18 @@
 class OpticalLink:
-    __id = 0
-    # __fiberType missingType
-    __length = 0.0
-    __attenuationCoefficient = 0.0
-    __pmdCoefficient = 0.0
-    __sharedGroupRisk = ""
-    __regions = []
-    # __mode missingType
-    __zeroDispersionWaveLength = 0.0
-    __sourceSite = 0
-    __destSite = 0
-    # __channels missingType
-    # __application missingType
-    __outOfOperation = False
-    __dispersionAt1550Nm = 0.0
+
+    def __init__(self):
+        self.id = 0
+        # self.fiberType missingType
+        self.length = 0.0
+        self.attenuationCoefficient = 0.0
+        self.pmdCoefficient = 0.0
+        self.sharedGroupRisk = ""
+        self.regions = []
+        # self.mode missingType
+        self.zeroDispersionWaveLength = 0.0
+        self.sourceSite = 0
+        self.destinationSite = 0
+        # self.channels missingType
+        # self.application missingType
+        self.IsOutOfOperation = False
+        self.dispersionAt1550Nm = 0.0
