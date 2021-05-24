@@ -6,8 +6,8 @@ class OpticalLink:
         self.length = 0.0
         self.attenuationCoefficient = 0.0
         self.pmdCoefficient = 0.0
-        self.sharedGroupRisk = ""
-        self.regions = []
+        self.sharedGroupRisk = str
+        self.regions = list[str]
         # self.mode missingType
         self.zeroDispersionWaveLength = 0.0
         self.sourceSite = 0

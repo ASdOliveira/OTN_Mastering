@@ -8,4 +8,4 @@ class Interfaces:
         # self.formFactor (TFormFactor missingType)
         self.portIndex = 0
         # self.supportedProtocolList (protocolType missingType)
-        self.demands = []
+        self.demands = list[int]
