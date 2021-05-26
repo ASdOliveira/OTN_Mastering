@@ -18,6 +18,13 @@ class TELink:
 
         return float(BusyQuantity) / float(len(self.tributarySlots))
 
+    def HasResource(self, quantity):
+        aux = 0
+        for SLOT in self.tributarySlots:
+            if not SLOT.IsBusy:
+                aux += 1
+        return aux >= quantity
+
     def isRestoration(self):
         for i in range(len(self.tributarySlots)):
             if self.tributarySlots[i].demandCode is None:  # TODO: Check This None!!
