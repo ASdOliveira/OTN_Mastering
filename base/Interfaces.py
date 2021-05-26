@@ -1,6 +1,8 @@
+from typing import List
+
 
 class Interfaces:
-    def __init__(self):
+    def __init__(self, _Demands: List[int] = None):
         self.id = 0
         # self.rate (TOtnInterfaceRate missing type)
         # self.fecTypeList(FecType missingType)
@@ -8,4 +10,4 @@ class Interfaces:
         # self.formFactor (TFormFactor missingType)
         self.portIndex = 0
         # self.supportedProtocolList (protocolType missingType)
-        self.demands = list[int]
+        self.demands = _Demands

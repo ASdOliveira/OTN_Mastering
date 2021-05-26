@@ -4,7 +4,7 @@ from typing import List
 
 
 class TELink:
-    def __init__(self, _TributarySlots: List[Slot]):
+    def __init__(self, _TributarySlots: List[Slot] = None):
         self.id = 0
         self.interfaceOrigin = Interfaces()
         self.interfaceDestination = Interfaces()
@@ -25,7 +25,10 @@ class TELink:
         return True
 
     def getRate(self):
-        pass  # TODO: CHECK This Ternary If:
-        # return(getTributarySlots().size() == 80)?TOtnInterfaceRate._100: TOtnInterfaceRate._10;
+        pass
+        """  if len(self.tributarySlots) == 80:
+            #What does this TOtnInterfaceRate???
+        return(getTributarySlots().size() == 80)?TOtnInterfaceRate._100: TOtnInterfaceRate._10;"""
+
 
 
