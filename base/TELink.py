@@ -1,3 +1,4 @@
+from base.InterfaceRate import InterfaceRate
 from base.Interfaces import Interfaces
 from base.TributarySlot import Slot
 from typing import List
@@ -32,10 +33,11 @@ class TELink:
         return True
 
     def getRate(self):
-        pass
-        """  if len(self.tributarySlots) == 80:
-            #What does this TOtnInterfaceRate???
-        return(getTributarySlots().size() == 80)?TOtnInterfaceRate._100: TOtnInterfaceRate._10;"""
+        if len(self.tributarySlots) == 80:
+            return InterfaceRate.Ten
+        else:
+            return InterfaceRate.Hundred
+
 
 
 
