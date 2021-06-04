@@ -1,3 +1,4 @@
+from base.Enums import LinkBundleType
 from base.OpticalLink import OpticalLink
 from base.TELink import TELink
 from typing import List
@@ -5,9 +6,10 @@ from typing import List
 
 class LinkBundle:
     def __init__(self, _OptLink: List[OpticalLink] = None, _TeLink: List[TELink] = None,
-                 _RiskGroup: List[str] = None, _admGroup: List[int] = None):
+                 _RiskGroup: List[str] = None, _admGroup: List[int] = None,
+                 _TLinkBundle: LinkBundleType = None):
         self.id = 0
-        # self.TLinkBundle MissingType
+        self.type = _TLinkBundle  # TODO: check type
         self.OtsOrigin = 0
         self.OtsDest = 0
         self.OpticalLinks = _OptLink
@@ -19,15 +21,17 @@ class LinkBundle:
         penalty = 0.0
         ret = 0.0
 
-        if metrics == 0:
-            # if TODO: What??
-            pass
+        if metrics == 0:  # TODO: Check this case
+            if self.type == LinkBundleType.Ten:
+                ret = 1 + penalty
+            else:
+                ret = 1
 
         elif metrics == 1:  # Inverse of availability
             availableQuantity = self.__getAvailableSlots()
             ret = 1 / float(availableQuantity)
 
-        if metrics == 2:  # Restoration
+        elif metrics == 2:  # Restoration
             ret = self.__getAvailableSlots()
 
         else:

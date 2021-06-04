@@ -1,4 +1,4 @@
-from base.InterfaceRate import InterfaceRate
+from base.Enums import InterfaceRate
 from base.Interfaces import Interfaces
 from base.TributarySlot import Slot
 from typing import List
@@ -28,7 +28,7 @@ class TELink:
 
     def isRestoration(self):
         for i in range(len(self.tributarySlots)):
-            if self.tributarySlots[i].demandCode is None:  # TODO: Check This None!!
+            if self.tributarySlots[i].demandCode is not None:  # TODO: Check This None!!
                 return False
         return True
 
