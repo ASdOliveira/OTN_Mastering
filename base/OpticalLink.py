@@ -1,7 +1,7 @@
 from typing import List
 
-class OpticalLink:
 
+class OpticalLink:
     def __init__(self, _regions: List[str] = None):
         self.id = 0
         # self.fiberType missingType

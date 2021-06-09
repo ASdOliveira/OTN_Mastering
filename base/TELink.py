@@ -13,8 +13,8 @@ class TELink:
 
     def occupationRatio(self):
         BusyQuantity = 0
-        for i in range(len(self.tributarySlots)):
-            if self.tributarySlots[i].IsBusy:
+        for TR in self.tributarySlots:
+            if TR.IsBusy:
                 BusyQuantity += 1
 
         return float(BusyQuantity) / float(len(self.tributarySlots))
@@ -27,8 +27,8 @@ class TELink:
         return aux >= quantity
 
     def isRestoration(self):
-        for i in range(len(self.tributarySlots)):
-            if self.tributarySlots[i].demandCode is not None:  # TODO: Check This None!!
+        for SLOT in self.tributarySlots:
+            if SLOT.demandCode is not None:
                 return False
         return True
 
