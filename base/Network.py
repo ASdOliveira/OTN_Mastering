@@ -27,3 +27,39 @@ class Network:
                         self.NextIdInterface = EInterface.id
 
         self.NextIdInterface += 1
+
+    def GenerateDoubleFaultsOpticalLinks(self):
+        OptLinks = self.FilterLinks(self.OpticalLinks)
+        for i in range(len(OptLinks)):
+            for j in range(i, len(OptLinks)):
+                if i != j:
+                    scenario = []
+                    for LnkBundle in self.linkBundle:
+                        if LnkBundle.ContainsOpticalLinks(OptLinks[i].id,OptLinks[j].id):
+                            scenario.append(LnkBundle.id)
+                    if len(scenario) > 0 and not self.ContainsScenario(self.FailureScenario,scenario):
+                        self.FailureScenario.append(scenario)
+
+    def FilterLinks(self, opticalLinks: List[OpticalLink]):
+        optLinks: List[OpticalLink] = []
+        for OptLk0 in opticalLinks:
+            flag = False
+            for OptLk1 in optLinks:
+                if (OptLk0.destinationSite == OptLk1.sourceSite) \
+                        and (OptLk0.sourceSite == OptLk1.destinationSite):
+                    flag = True
+            if not flag:
+                optLinks.append(OptLk0)
+        return optLinks
+
+    def ContainsScenario(self, doubleFailureScenario, Scenario):
+        for Scenario1 in doubleFailureScenario:
+            if len(Scenario1) == len(Scenario):
+                cont = 0
+                for long0 in Scenario:
+                    for long1 in Scenario1:
+                        if long0 == long1:
+                            cont += 1
+                if cont == len(Scenario):
+                    return True
+        return False
