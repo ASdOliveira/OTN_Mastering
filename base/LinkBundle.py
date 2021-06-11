@@ -52,3 +52,9 @@ class LinkBundle:
             if TELINK.HasResource(quantity):
                 return True
         return False
+
+    def ContainsOpticalLinks(self, Id1, Id2):
+        for OptLink in self.OpticalLinks:
+            if (OptLink.id == Id1) or (OptLink.id == Id2):
+                return True
+        return False
