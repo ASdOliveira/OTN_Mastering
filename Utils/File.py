@@ -7,9 +7,12 @@ from pathlib import Path
 import csv
 import networkx as nx
 
+from Models.Service import Service
 
-def importNetworkTopologyToGraph(fileName):
-    G = nx.MultiGraph()
+
+def importNetworkTopology(fileName):
+    Graph = nx.MultiGraph()
+    Services = []
 
     relativePath = "../Input/" + str(fileName)
     path = Path(__file__).parent / relativePath
@@ -21,9 +24,9 @@ def importNetworkTopologyToGraph(fileName):
             if line_count == 0:
                 line_count += 1
             else:
-                print(row[0], row[1])
-                G.add_edge(row[0], row[1])
+                Graph.add_edge(row[0], row[1])
+                Services.append(Service(row[0], row[1], str(row[2])))
                 line_count += 1
-    return G
+    return Graph, Services
 
 
