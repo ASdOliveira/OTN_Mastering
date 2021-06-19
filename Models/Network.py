@@ -1,6 +1,7 @@
 from Models.LinkBundle import LinkBundle
 from Models.OTN import OTN
 from Utils.File import importNetworkTopology
+from itertools import combinations
 
 
 class Network:
@@ -10,7 +11,9 @@ class Network:
         self.LinkBundles = []
         self.Services = []
         self.FailureScenarios = []
+
         self._loadNetwork()
+        self._loadFailureScenarios()
 
     def _loadNetwork(self):
         Graph, self.Services = importNetworkTopology(self.fileName)
@@ -20,3 +23,13 @@ class Network:
 
         for edge in Graph.edges:
             self.LinkBundles.append(LinkBundle(edge[0], edge[1], edge))
+
+    def _loadFailureScenarios(self):
+        comb = combinations(self.LinkBundles, 2)
+
+        for COMB in comb:
+            aux = []
+            for LB in self.LinkBundles:
+                if LB not in COMB:
+                    aux.append(LB)
+            self.FailureScenarios.append(aux)
