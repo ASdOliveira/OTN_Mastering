@@ -1,7 +1,9 @@
 from Models.LinkBundle import LinkBundle
 from Models.OTN import OTN
 from Utils.File import importNetworkTopology
+
 from itertools import combinations
+import copy
 
 
 class Network:
@@ -32,4 +34,4 @@ class Network:
             for LB in self.LinkBundles:
                 if LB not in COMB:
                     aux.append(LB)
-            self.FailureScenarios.append(aux)
+            self.FailureScenarios = copy.deepcopy(aux)
