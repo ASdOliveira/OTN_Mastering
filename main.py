@@ -5,6 +5,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # 1: Load the Network Topology
+# 2: Load the service (demand)
+# 3: Model the data
+# 4: Calculate the fails Scenario
 Net = Network(fileName="Topologia1.csv")
 
 # G, ser = importNetworkTopology("Topologia1.csv")
@@ -34,9 +37,7 @@ Net = Network(fileName="Topologia1.csv")
 # plt.axis('off')
 # plt.show()
 
-# 2: Load the service (demand)
-# 3: Model the data
-# 4: Calculate the fails Scenario
+
 # 5: Runs the Multi-Objective Algorithm
 # 5.1: Evaluate the interfaces Quantity
 # 5.2: Evaluate the TIFF
