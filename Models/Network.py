@@ -9,9 +9,14 @@ import copy
 class Network:
     def __init__(self, fileName):
         self.fileName = fileName
+
         self.NodesOTN = []
         self.LinkBundles = []
+        self.NodesDWDM = []
+        self.LinksDWDM = []
         self.Services = []
+        self.ConnectionBetweenOTNAndDWDMNodes = {}
+
         self.FailureScenarios = []
 
         self._loadNetwork()

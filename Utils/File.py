@@ -14,6 +14,10 @@ def importNetworkTopology(fileName):
     Graph = nx.MultiGraph()
     Services = []
 
+    dwdm_flag = False
+    otn_flag = False
+    service_flag = False
+
     relativePath = "../Input/" + str(fileName)
     path = Path(__file__).parent / relativePath
 
@@ -21,6 +25,13 @@ def importNetworkTopology(fileName):
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
+            if row[0] == 'DWDM':
+                dwdm_flag = True
+            elif row[0] == 'OTN':
+                otn_flag = True
+            elif row[0] == 'Services':
+                service_flag = True
+
             if line_count == 0:
                 line_count += 1
             else:
