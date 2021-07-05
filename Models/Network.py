@@ -7,8 +7,8 @@ import copy
 
 
 class Network:
-    def __init__(self, fileName):
-        self.fileName = fileName
+    def __init__(self, folderName):
+        self.folderName = folderName
 
         self.NodesOTN = []
         self.LinkBundles = []
@@ -23,15 +23,22 @@ class Network:
         self._loadFailureScenarios()
 
     def _loadNetwork(self):
-        Graph, self.Services = importNetworkTopology(self.fileName)
-        count = 0
+        self.LinkBundles, self.LinksDWDM, self.Services = importNetworkTopology(self.folderName)
+        # count = 0
 
-        for node in Graph.nodes:
-            self.NodesOTN.append(OTN(node))
-
-        for edge in Graph.edges:
-            self.LinkBundles.append(LinkBundle(count, edge[0], edge[1], edge))
-            count += 1
+        # for node in OtnGraph.nodes:
+        #     self.NodesOTN.append(OTN(node))
+        #
+        # for edge in OtnGraph.edges:
+        #     self.LinkBundles.append(LinkBundle(count, edge[0], edge[1], edge))
+        #     count += 1
+        #
+        # for node in dwdmGraph.nodes:
+        #     self.NodesDWDM.append(OTN(node))
+        #
+        # for edge in dwdmGraph.edges:
+        #     self.LinksDWDM.append(LinkBundle(count, edge[0], edge[1], edge))
+        #     count += 1
 
     def _loadFailureScenarios(self):
         comb = combinations(self.LinkBundles, 2)

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # 2: Load the service (demand)
 # 3: Model the data
 # 4: Calculate the fails Scenario
-Net = Network(fileName="Topologia1.csv")
+Net = Network(folderName="TopologiaIntroducao")
 
 # G, ser = importNetworkTopology("Topologia1.csv")
 # print(G.nodes())

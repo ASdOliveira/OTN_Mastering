@@ -7,37 +7,72 @@ from pathlib import Path
 import csv
 import networkx as nx
 
+from Models.Link import Link
+from Models.LinkBundle import LinkBundle
 from Models.Service import Service
 
+otnFile = "OTN.csv"
+dwdmFile = "DWDM.csv"
+servicesFile = "Services.csv"
 
-def importNetworkTopology(fileName):
-    Graph = nx.MultiGraph()
-    Services = []
 
-    dwdm_flag = False
-    otn_flag = False
-    service_flag = False
+def importNetworkTopology(folderName):
+    dwdmLinks = _readDWDMCSV(folderName)
+    otnLinkBundles = _readOTNCSV(folderName)
+    Services = _readServiceCSV(folderName)
 
-    relativePath = "../Input/" + str(fileName)
+    return otnLinkBundles, dwdmLinks, Services
+
+
+def _readDWDMCSV(folderName):
+    dwdm = []
+
+    relativePath = "../Input/" + str(folderName) + "/" + dwdmFile
     path = Path(__file__).parent / relativePath
 
     with open(path) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
-            if row[0] == 'DWDM':
-                dwdm_flag = True
-            elif row[0] == 'OTN':
-                otn_flag = True
-            elif row[0] == 'Services':
-                service_flag = True
-
             if line_count == 0:
                 line_count += 1
             else:
-                Graph.add_edge(row[0], row[1])
-                Services.append(Service(row[0], row[1], str(row[2])))
+                dwdm.append(Link(_id=row[0], nodeFrom=row[1], nodeTo=row[2]))
                 line_count += 1
-    return Graph, Services
+    return dwdm
 
 
+def _readOTNCSV(folderName):
+    otn = []
+
+    relativePath = "../Input/" + str(folderName) + "/" + otnFile
+    path = Path(__file__).parent / relativePath
+
+    with open(path) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                line_count += 1
+            else:
+                otn.append(LinkBundle(_id=row[0], nodeFrom=row[1], NodeTo=row[2], dwdmLink=row[3]))
+                line_count += 1
+    return otn
+
+
+def _readServiceCSV(folderName):
+    Services = []
+
+    relativePath = "../Input/" + str(folderName) + "/" + servicesFile
+    path = Path(__file__).parent / relativePath
+
+    with open(path) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                line_count += 1
+            else:
+                Services.append(Service(NodeTo=row[0], NodeFrom=row[1], ServiceType=str(row[2])))
+                line_count += 1
+    return Services
