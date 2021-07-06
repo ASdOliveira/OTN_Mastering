@@ -1,5 +1,3 @@
-from Models.LinkBundle import LinkBundle
-from Models.OTN import OTN
 from Utils.File import importNetworkTopology
 
 from itertools import combinations
@@ -21,34 +19,20 @@ class Network:
 
         self._loadNetwork()
         self._loadFailureScenarios()
+        print("BKPT")
 
     def _loadNetwork(self):
         self.LinkBundles, self.LinksDWDM, self.Services = importNetworkTopology(self.folderName)
-        # count = 0
-
-        # for node in OtnGraph.nodes:
-        #     self.NodesOTN.append(OTN(node))
-        #
-        # for edge in OtnGraph.edges:
-        #     self.LinkBundles.append(LinkBundle(count, edge[0], edge[1], edge))
-        #     count += 1
-        #
-        # for node in dwdmGraph.nodes:
-        #     self.NodesDWDM.append(OTN(node))
-        #
-        # for edge in dwdmGraph.edges:
-        #     self.LinksDWDM.append(LinkBundle(count, edge[0], edge[1], edge))
-        #     count += 1
 
     def _loadFailureScenarios(self):
-        comb = combinations(self.LinkBundles, 2)
-
-        for COMB in comb:
+        comb = combinations(self.LinksDWDM, 2)
+        combinationList = list(comb)
+        for COMB in combinationList:
             aux = []
             for LB in self.LinkBundles:
-                if LB not in COMB:
+                if (COMB[0].id not in LB.dwdmLink) and (COMB[1].id not in LB.dwdmLink):
                     aux.append(LB)
-            self.FailureScenarios = copy.deepcopy(aux)
+            self.FailureScenarios.append(copy.deepcopy(aux))
 
     def evaluateNetwork(self, chromosome):
         """
@@ -66,6 +50,3 @@ class Network:
 
     def _convertToNetwork(self, chromosome):
         pass
-
-
-
