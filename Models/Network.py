@@ -26,8 +26,7 @@ class Network:
 
     def _loadFailureScenarios(self):
         comb = combinations(self.LinksDWDM, 2)
-        combinationList = list(comb)
-        for COMB in combinationList:
+        for COMB in comb:
             aux = []
             for LB in self.LinkBundles:
                 if (COMB[0].id not in LB.dwdmLink) and (COMB[1].id not in LB.dwdmLink):
