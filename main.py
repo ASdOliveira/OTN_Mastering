@@ -9,7 +9,7 @@ import timeit
 startTime = timeit.default_timer()
 
 Net = Network(folderName="TopologiaIntroducao")
-chromosomeTest = [1, 2, 3]
+chromosomeTest = [1, 2, 3, 4]
 InterQuant, Tirf = evaluateNetwork(Net, chromosomeTest)
 
 stopTime = timeit.default_timer()
