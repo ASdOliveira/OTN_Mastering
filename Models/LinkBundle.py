@@ -5,4 +5,4 @@ class LinkBundle:
         self.NodeTo = NodeTo
         # self.edge = edge
         self.dwdmLink = dwdmLink
-        self.TELinks = []
+        # self.TELinks = []
