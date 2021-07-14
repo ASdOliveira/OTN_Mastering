@@ -1,6 +1,6 @@
 label, Node_from, Node_to
-L1, N1, N2
-L2, N1, N5
-L3, N4, N5
-L4, N2, N3
-L5, N4, N3
+L1,N1,N2
+L2,N1,N5
+L3,N4,N5
+L4,N2,N3
+L5,N4,N3
