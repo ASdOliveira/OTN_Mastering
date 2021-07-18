@@ -8,8 +8,8 @@ import timeit
 # 4: Calculate the fails Scenario
 startTime = timeit.default_timer()
 
-Net = Network(folderName="TopologiaIntroducao")
-chromosomeTest = [1, 2, 3, 4]
+Net = Network(folderName="Topologia1")
+chromosomeTest = [2, 2, 2, 2, 2, 2, 2] # TODO: sizeof linkBundles!!
 InterQuant, Tirf = evaluateNetwork(Net, chromosomeTest)
 
 stopTime = timeit.default_timer()

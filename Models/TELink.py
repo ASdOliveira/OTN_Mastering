@@ -3,5 +3,6 @@ class TELink:
         self.NodeFrom = NodeFrom
         self.NodeTo = NodeTo
         self.IsBusy = False
-        self.Service = None
+        self.ServiceId = None
+        self.ServiceType = None
         self.LinkBundleId = LinkBundleId

@@ -34,7 +34,36 @@ def _calculateTIRF(network, chromosome):
     for gene in chromosome:
         TELinkAux = TELinks[count]
         for x in range(gene):
-            NetworkGraph.add_edge(TELinkAux.NodeFrom, TELinkAux.NodeTo, key=TELinkAux.LinkBundleId + "_" + str(x))
+            NetworkGraph.add_edge(TELinkAux.NodeFrom, TELinkAux.NodeTo, key=TELinkAux.LinkBundleId + "_" + str(x),
+                                  link=TELink(TELinkAux.NodeFrom, TELinkAux.NodeTo, TELinkAux.LinkBundleId))
         count += 1
-    # at This point the Network Graph has the Network modeled on TELink rather than Link bundles
+    # At This point the Network Graph has the Network modeled on TELink rather than Link bundles
+
+    # Allocates the services
+
+    # TODO: o problema aqui eh a rota, precisa encontrar uma rota e alocar o servico nela.
+    for service in NetworkCopy.Services:
+        # a = nx.shortest_path(NetworkGraph, service.NodeFrom, service.NodeTo)
+        b = nx.all_simple_edge_paths(NetworkGraph, service.NodeFrom, service.NodeTo)
+
+        AllocationIsCompleted = False
+        TELINKAux = []
+        for path in b:
+            if AllocationIsCompleted:
+                break
+            else:
+                for edge in path:
+                    TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
+                    if TELINK.IsBusy:
+                        AllocationIsCompleted = False
+                        TELINKAux = []
+                        break
+                    else:
+                        TELINKAux.append(TELINK)
+                        AllocationIsCompleted = True
+        for link in TELINKAux:
+            link.IsBusy = True
+            link.ServiceId = service
+            link.ServiceType = "MAIN ROUTE"
+
     return None
