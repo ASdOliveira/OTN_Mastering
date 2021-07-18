@@ -1,0 +1,8 @@
+label, Node_from, Node_to
+L1,N1,N4
+L2,N1,N4
+L3,N1,N2
+L4,N2,N3
+L5,N3,N4
+L6,N3,N4
+L7,N2,N4

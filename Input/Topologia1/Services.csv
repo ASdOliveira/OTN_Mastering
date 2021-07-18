@@ -1,0 +1,9 @@
+Node_from, Node_to, Service_type
+O1,O4,1+R
+O2,O4,1+R
+O1,O3,1+R
+O2,O3,1+R
+O1,O2,1+R
+O3,O4,1+R
+O1,O4,1+R
+O2,O4,1+R
