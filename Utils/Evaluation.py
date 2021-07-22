@@ -1,3 +1,4 @@
+import copy
 from copy import deepcopy
 import networkx as nx
 from Models.TELink import TELink
@@ -39,31 +40,29 @@ def _calculateTIRF(network, chromosome):
         count += 1
     # At This point the Network Graph has the Network modeled on TELink rather than Link bundles
 
-    # Allocates the services
+    NetworkGraphCopy = copy.deepcopy(NetworkGraph)
 
-    # TODO: o problema aqui eh a rota, precisa encontrar uma rota e alocar o servico nela.
+    # Try to allocates the services
+
+    NonAllocatedServices = []
     for service in NetworkCopy.Services:
-        # a = nx.shortest_path(NetworkGraph, service.NodeFrom, service.NodeTo)
-        b = nx.all_simple_edge_paths(NetworkGraph, service.NodeFrom, service.NodeTo)
+        all_edge_paths = nx.all_simple_edge_paths(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
+        sorted_all_edge_paths = sorted(list(all_edge_paths), key=lambda a: len(a))
 
         AllocationIsCompleted = False
-        TELINKAux = []
-        for path in b:
-            if AllocationIsCompleted:
-                break
-            else:
-                for edge in path:
-                    TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
-                    if TELINK.IsBusy:
-                        AllocationIsCompleted = False
-                        TELINKAux = []
-                        break
-                    else:
-                        TELINKAux.append(TELINK)
-                        AllocationIsCompleted = True
-        for link in TELINKAux:
-            link.IsBusy = True
-            link.ServiceId = service
-            link.ServiceType = "MAIN ROUTE"
 
+        edges = sorted_all_edge_paths[0]
+        for edge in edges:
+            TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
+            TELINK.IsBusy = True
+            AllocationIsCompleted = True
+            NetworkGraphCopy.remove_edge(edge[0], edge[1], edge[2])
+
+        if not AllocationIsCompleted:
+            NonAllocatedServices.append(service)
+
+# Things to improve:
+# 1 - Try to remove busy edges from the search.
+# 2 - Try to allocate at the shortest path
+# 3 - Execution Time: 0.006502
     return None
