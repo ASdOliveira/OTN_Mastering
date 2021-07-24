@@ -31,6 +31,21 @@ def _calculateTIRF(network, chromosome):
         TELinks.append(TELink(NodeFrom=linkBundle.NodeFrom,
                               NodeTo=linkBundle.NodeTo,
                               LinkBundleId=linkBundle.id))
+
+    # At This point the Network Graph has the Network modeled on TELink rather than Link bundles
+    _convertToGraph(chromosome, TELinks, NetworkGraph)
+    NetworkGraphCopy = copy.deepcopy(NetworkGraph)
+
+    IsAllServicesAllocated = _allocateServices(NetworkCopy, NetworkGraph, NetworkGraphCopy)
+
+    if not IsAllServicesAllocated:
+        # TODO: Implement a penalty
+        pass
+
+    return None
+
+
+def _convertToGraph(chromosome, TELinks, NetworkGraph):
     count = 0
     for gene in chromosome:
         TELinkAux = TELinks[count]
@@ -38,13 +53,12 @@ def _calculateTIRF(network, chromosome):
             NetworkGraph.add_edge(TELinkAux.NodeFrom, TELinkAux.NodeTo, key=TELinkAux.LinkBundleId + "_" + str(x),
                                   link=TELink(TELinkAux.NodeFrom, TELinkAux.NodeTo, TELinkAux.LinkBundleId))
         count += 1
-    # At This point the Network Graph has the Network modeled on TELink rather than Link bundles
 
-    NetworkGraphCopy = copy.deepcopy(NetworkGraph)
 
-    # Try to allocates the services
-
+def _allocateServices(NetworkCopy, NetworkGraph, NetworkGraphCopy):
     NonAllocatedServices = []
+    IsServicesAllocated = True
+
     for service in NetworkCopy.Services:
         all_edge_paths = nx.all_simple_edge_paths(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
         sorted_all_edge_paths = sorted(list(all_edge_paths), key=lambda a: len(a))
@@ -61,8 +75,7 @@ def _calculateTIRF(network, chromosome):
         if not AllocationIsCompleted:
             NonAllocatedServices.append(service)
 
-# Things to improve:
-# 1 - Try to remove busy edges from the search.
-# 2 - Try to allocate at the shortest path
-# 3 - Execution Time: 0.006502
-    return None
+    if len(NonAllocatedServices) > 0:
+        IsServicesAllocated = False
+
+    return IsServicesAllocated
