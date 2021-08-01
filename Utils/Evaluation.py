@@ -24,11 +24,11 @@ def _calculateInterfacesQuantity(chromosome):
 def _calculateTIRF(network, chromosome):
     """TIRF is defined as: IR/TTR. Where, IR = number of failures and
     TTR = Total restore attempts"""
-    NetworkCopy = deepcopy(network)
+    Network = deepcopy(network)
     NetworkGraph = nx.MultiGraph()
     TELinks = []
 
-    for linkBundle in NetworkCopy.LinkBundles:
+    for linkBundle in Network.LinkBundles:
         TELinks.append(TELink(NodeFrom=linkBundle.NodeFrom,
                               NodeTo=linkBundle.NodeTo,
                               LinkBundleId=linkBundle.id))
@@ -36,17 +36,19 @@ def _calculateTIRF(network, chromosome):
     # At This point the Network Graph has the Network modeled on TELink rather than Link bundles
     _convertToGraph(chromosome, TELinks, NetworkGraph)
 
-    IsAllServicesAllocated = _allocateServices(NetworkCopy, NetworkGraph)
+    NetworkGraphAuxiliary = deepcopy(NetworkGraph)
+
+    IsAllServicesAllocated = _allocateServices(Network, NetworkGraph, NetworkGraphAuxiliary)
 
     if not IsAllServicesAllocated:
         # TODO: Implement a penalty
         pass
 
-   # IsProtectionRoutesAllocated = _allocateProtection()
+    IsProtectionRoutesAllocated = _allocateProtection(Network, NetworkGraph, NetworkGraphAuxiliary)
 
-    # if not IsProtectionRoutesAllocated:
-    #     # TODO: Implement a penalty
-    #     pass
+    if not IsProtectionRoutesAllocated:
+        # TODO: Implement a penalty
+        pass
     return None
 
 
@@ -60,21 +62,21 @@ def _convertToGraph(chromosome, TELinks, NetworkGraph):
         count += 1
 
 
-def _allocateServices(NetworkCopy, NetworkGraph):
+def _allocateServices(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
     NonAllocatedServices = []
     IsServicesAllocated = True
-    NetworkGraphCopy = copy.deepcopy(NetworkGraph)
 
     for service in NetworkCopy.Services:
-        edges = _getShortestPathInMultigraph(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
+        edges = _getShortestPathInMultigraph(NetworkGraphAuxiliary, service.NodeFrom, service.NodeTo)
 
         AllocationIsCompleted = False
 
         for edge in edges:
             TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
             TELINK.IsBusy = True
+            service.MainRoute.append(edge[2])
             AllocationIsCompleted = True
-            NetworkGraphCopy.remove_edge(edge[0], edge[1], edge[2])
+            NetworkGraphAuxiliary.remove_edge(edge[0], edge[1], edge[2])
 
         if not AllocationIsCompleted:
             NonAllocatedServices.append(service)
@@ -85,18 +87,44 @@ def _allocateServices(NetworkCopy, NetworkGraph):
     return IsServicesAllocated
 
 
-def _allocateProtection(NetworkCopy, NetworkGraph):
-    NetworkGraphCopy = copy.deepcopy(NetworkGraph)
-
+def _allocateProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
     for service in NetworkCopy.Services:
-        if service == ServiceEnum.MAIN_ROUTE_AND_BACKUP or ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION:
+        if service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP or ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION:
             # TODO: Allocate the backup route.
             # Remember: backup route must be a disjoint route, maybe the main route should be saved
+            Aux = deepcopy(NetworkGraphAuxiliary)
+            edges = _getDisjointPath(NetworkGraph, service.NodeFrom, service.NodeTo, service.MainRoute)
             pass
     return False
 
 
 def _getShortestPathInMultigraph(G, Source, Target):
+    all_edge_paths = nx.all_simple_edge_paths(G, Source, Target)
+    sorted_all_edge_paths = sorted(list(all_edge_paths), key=lambda a: len(a))
+    edges = sorted_all_edge_paths[0]
+    return edges
+
+
+def _getDisjointPath(G, Source, Target, PathToAvoid):
+    LinkBundleList = []
+    DisjointEdges = []
+
+    for path in PathToAvoid:
+        LinkBundleList.append(path.split("_")[0])
+
+    edges = G.edges(keys=True)
+
+    for element in LinkBundleList:
+        for edge in edges:
+            if element in edge[2]:
+                #TODO: remover de edges.
+                pass
+
+    """
+    A ideia é a seguinte, encontrar a rota disjunta passando o caminho a evitar. Pra isso, eu removo do grafo o linkbundle
+    em que a rota a evitar se encontra. Feito isso, eu procuro o menor caminho, e faço a alocação tal como na alocação da rota 
+    principal.
+    """
     all_edge_paths = nx.all_simple_edge_paths(G, Source, Target)
     sorted_all_edge_paths = sorted(list(all_edge_paths), key=lambda a: len(a))
     edges = sorted_all_edge_paths[0]

@@ -6,6 +6,7 @@ class Service:
         self.NodeFrom = NodeFrom
         self.NodeTo = NodeTo
         self.ServiceType = self._serviceTypeToEnum(ServiceType)
+        self.MainRoute = []
 
     def _serviceTypeToEnum(self, ServiceType):
         service = ServiceType.rstrip().replace(" ", "")
