@@ -49,6 +49,11 @@ def _calculateTIRF(network, chromosome):
     if not IsProtectionRoutesAllocated:
         # TODO: Implement a penalty
         pass
+    
+    # DEBUG
+    # print("NodeFrom", "NodeTo", "MainRoute", "ProtectionRoute", sep= " | ")
+    # for services in Network.Services:
+    #     print(services.NodeFrom, services.NodeTo, services.MainRoute, services.ProtectionRoute, sep=" | ")
     return None
 
 
@@ -93,8 +98,6 @@ def _allocateProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
 
     for service in NetworkCopy.Services:
         if service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP or ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION:
-            # TODO: Allocate the backup route.
-            # Remember: backup route must be a disjoint route, maybe the main route should be saved
             Aux = deepcopy(NetworkGraphAuxiliary)
             edges = _getDisjointPath(Aux, service.NodeFrom, service.NodeTo, service.MainRoute)
 
@@ -103,22 +106,25 @@ def _allocateProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
             for edge in edges:
                 TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
                 TELINK.IsBusy = True
+                service.ProtectionRoute.append(edge[2])
                 AllocationIsCompleted = True
                 NetworkGraphAuxiliary.remove_edge(edge[0], edge[1], edge[2])
 
             if not AllocationIsCompleted:
                 NonAllocatedProtection.append(service)
 
-        if len(NonAllocatedProtection) > 0:
-            IsProtectionAllocated = False
+    if len(NonAllocatedProtection) > 0:
+        IsProtectionAllocated = False
 
     return IsProtectionAllocated
 
 
 def _getShortestPathInMultigraph(G, Source, Target):
+    edges = []
     all_edge_paths = nx.all_simple_edge_paths(G, Source, Target)
     sorted_all_edge_paths = sorted(list(all_edge_paths), key=lambda a: len(a))
-    edges = sorted_all_edge_paths[0]
+    if len(sorted_all_edge_paths) > 0:
+        edges = sorted_all_edge_paths[0]
     return edges
 
 
