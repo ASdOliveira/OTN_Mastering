@@ -88,14 +88,31 @@ def _allocateServices(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
 
 
 def _allocateProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
+    NonAllocatedProtection = []
+    IsProtectionAllocated = True
+
     for service in NetworkCopy.Services:
         if service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP or ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION:
             # TODO: Allocate the backup route.
             # Remember: backup route must be a disjoint route, maybe the main route should be saved
             Aux = deepcopy(NetworkGraphAuxiliary)
-            edges = _getDisjointPath(NetworkGraph, service.NodeFrom, service.NodeTo, service.MainRoute)
-            pass
-    return False
+            edges = _getDisjointPath(Aux, service.NodeFrom, service.NodeTo, service.MainRoute)
+
+            AllocationIsCompleted = False
+
+            for edge in edges:
+                TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
+                TELINK.IsBusy = True
+                AllocationIsCompleted = True
+                NetworkGraphAuxiliary.remove_edge(edge[0], edge[1], edge[2])
+
+            if not AllocationIsCompleted:
+                NonAllocatedProtection.append(service)
+
+        if len(NonAllocatedProtection) > 0:
+            IsProtectionAllocated = False
+
+    return IsProtectionAllocated
 
 
 def _getShortestPathInMultigraph(G, Source, Target):
@@ -107,25 +124,20 @@ def _getShortestPathInMultigraph(G, Source, Target):
 
 def _getDisjointPath(G, Source, Target, PathToAvoid):
     LinkBundleList = []
-    DisjointEdges = []
 
     for path in PathToAvoid:
-        LinkBundleList.append(path.split("_")[0])
+        LinkBundleList.append(path.split("_")[0])  # Given LB1_0, the result will be LB1
 
     edges = G.edges(keys=True)
 
-    for element in LinkBundleList:
-        for edge in edges:
-            if element in edge[2]:
-                #TODO: remover de edges.
-                pass
+    edgesToBeRemoved = []
+    for linkBundle in LinkBundleList:
+        for (i, j, k) in edges:
+            if linkBundle in k:
+                edgesToBeRemoved.append((i, j, k))
 
-    """
-    A ideia é a seguinte, encontrar a rota disjunta passando o caminho a evitar. Pra isso, eu removo do grafo o linkbundle
-    em que a rota a evitar se encontra. Feito isso, eu procuro o menor caminho, e faço a alocação tal como na alocação da rota 
-    principal.
-    """
-    all_edge_paths = nx.all_simple_edge_paths(G, Source, Target)
-    sorted_all_edge_paths = sorted(list(all_edge_paths), key=lambda a: len(a))
-    edges = sorted_all_edge_paths[0]
-    return edges
+    if len(edgesToBeRemoved) > 0:
+        G.remove_edges_from(edgesToBeRemoved)
+
+    DisjointPath = _getShortestPathInMultigraph(G, Source, Target)
+    return DisjointPath
