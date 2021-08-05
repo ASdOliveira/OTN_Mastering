@@ -1,4 +1,3 @@
-import copy
 from copy import deepcopy
 import networkx as nx
 from Models.TELink import TELink
@@ -49,7 +48,10 @@ def _calculateTIRF(network, chromosome):
     if not IsProtectionRoutesAllocated:
         # TODO: Implement a penalty
         pass
-    
+
+    # At this point the Network is allocated with work and protection routes.
+    TIRF = _GetTIRF(Network, NetworkGraphAuxiliary)
+
     # DEBUG
     # print("NodeFrom", "NodeTo", "MainRoute", "ProtectionRoute", sep= " | ")
     # for services in Network.Services:
@@ -147,3 +149,26 @@ def _getDisjointPath(G, Source, Target, PathToAvoid):
 
     DisjointPath = _getShortestPathInMultigraph(G, Source, Target)
     return DisjointPath
+
+
+def _GetTIRF(NetworkCopy, NetworkGraphAuxiliary):
+
+    IR = 0.0
+    TTR = 0.0
+
+    for failureScenario in NetworkCopy.FailureScenarios:
+        NetworkGraphCopy = deepcopy(NetworkGraphAuxiliary)
+        NetworkGraphCopy.remove_edges_from(failureScenario) # TODO: Não tá removendo corretamente tem que fazer como faz no disjoint
+        for service in NetworkCopy.Services:
+            if service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_RESTORATION or ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION:
+                # Let's allocate
+                edges = _getDisjointPath(NetworkGraphCopy, service.NodeFrom, service.NodeTo, service.MainRoute)
+
+                TTR += 1.0
+                if len(edges) == 0:
+                    IR += 1.0
+
+                for edge in edges:
+                    NetworkGraphAuxiliary.remove_edge(edge[0], edge[1], edge[2])
+
+    return float(IR/TTR)
