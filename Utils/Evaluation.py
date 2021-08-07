@@ -8,7 +8,7 @@ def evaluateNetwork(network, chromosome):
     InterfacesQuantities = _calculateInterfacesQuantity(chromosome)
     TIRF = _calculateTIRF(network, chromosome)
 
-    return InterfacesQuantities, TIRF
+    return [InterfacesQuantities, TIRF]
 
 
 def _calculateInterfacesQuantity(chromosome):
@@ -26,6 +26,7 @@ def _calculateTIRF(network, chromosome):
     Network = deepcopy(network)
     NetworkGraph = nx.MultiGraph()
     TELinks = []
+    TIRF = 0.0
 
     for linkBundle in Network.LinkBundles:
         TELinks.append(TELink(NodeFrom=linkBundle.NodeFrom,
@@ -40,14 +41,16 @@ def _calculateTIRF(network, chromosome):
     IsAllServicesAllocated = _allocateServices(Network, NetworkGraph, NetworkGraphAuxiliary)
 
     if not IsAllServicesAllocated:
-        # TODO: Implement a penalty
-        pass
+        # TODO: Check this penalty
+        TIRF = 1.0
+        return TIRF
 
     IsProtectionRoutesAllocated = _allocateProtection(Network, NetworkGraph, NetworkGraphAuxiliary)
 
     if not IsProtectionRoutesAllocated:
-        # TODO: Implement a penalty
-        pass
+        # TODO: Check this penalty
+        TIRF = 1.0
+        return TIRF
 
     # At this point the Network is allocated with work and protection routes.
     TIRF = _GetTIRF(Network, NetworkGraphAuxiliary)
@@ -56,7 +59,7 @@ def _calculateTIRF(network, chromosome):
     # print("NodeFrom", "NodeTo", "MainRoute", "ProtectionRoute", sep= " | ")
     # for services in Network.Services:
     #     print(services.NodeFrom, services.NodeTo, services.MainRoute, services.ProtectionRoute, sep=" | ")
-    return None
+    return TIRF
 
 
 def _convertToGraph(chromosome, TELinks, NetworkGraph):
@@ -136,39 +139,44 @@ def _getDisjointPath(G, Source, Target, PathToAvoid):
     for path in PathToAvoid:
         LinkBundleList.append(path.split("_")[0])  # Given LB1_0, the result will be LB1
 
-    edges = G.edges(keys=True)
-
-    edgesToBeRemoved = []
-    for linkBundle in LinkBundleList:
-        for (i, j, k) in edges:
-            if linkBundle in k:
-                edgesToBeRemoved.append((i, j, k))
-
-    if len(edgesToBeRemoved) > 0:
-        G.remove_edges_from(edgesToBeRemoved)
+    G = _removeEdgesFromLinkBundle(G, LinkBundleList)
 
     DisjointPath = _getShortestPathInMultigraph(G, Source, Target)
     return DisjointPath
 
 
 def _GetTIRF(NetworkCopy, NetworkGraphAuxiliary):
-
     IR = 0.0
     TTR = 0.0
 
     for failureScenario in NetworkCopy.FailureScenarios:
         NetworkGraphCopy = deepcopy(NetworkGraphAuxiliary)
-        NetworkGraphCopy.remove_edges_from(failureScenario) # TODO: Não tá removendo corretamente tem que fazer como faz no disjoint
+
+        NetworkGraphCopy = _removeEdgesFromLinkBundle(NetworkGraphCopy, failureScenario)
+
         for service in NetworkCopy.Services:
             if service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_RESTORATION or ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION:
                 # Let's allocate
-                edges = _getDisjointPath(NetworkGraphCopy, service.NodeFrom, service.NodeTo, service.MainRoute)
+                # edges = _getDisjointPath(NetworkGraphCopy, service.NodeFrom, service.NodeTo, service.MainRoute)
+                edges = _getShortestPathInMultigraph(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
 
                 TTR += 1.0
-                if len(edges) == 0:
+                if len(edges) == 0:   # There isn't any route available
                     IR += 1.0
 
                 for edge in edges:
-                    NetworkGraphAuxiliary.remove_edge(edge[0], edge[1], edge[2])
+                    NetworkGraphCopy.remove_edge(edge[0], edge[1], edge[2])
 
     return float(IR/TTR)
+
+
+def _removeEdgesFromLinkBundle(Graph, LinkBundlesToRemove):
+    edgesToBeRemoved = []
+    edges = Graph.edges(keys=True)
+    for linkBundle in LinkBundlesToRemove:
+        for (i, j, k) in edges:
+            if linkBundle in k:
+                edgesToBeRemoved.append((i, j, k))
+
+    Graph.remove_edges_from(edgesToBeRemoved)
+    return Graph

@@ -29,5 +29,5 @@ class Network:
             aux = []
             for LB in self.LinkBundles:
                 if (COMB[0].id in LB.dwdmLink) or (COMB[1].id in LB.dwdmLink):
-                    aux.append((LB.NodeFrom, LB.NodeTo, LB.id))
+                    aux.append(LB.id)
             self.FailureScenarios.append(copy.deepcopy(aux))

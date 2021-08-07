@@ -9,10 +9,13 @@ import timeit
 startTime = timeit.default_timer()
 
 Net = Network(folderName="Topologia1")
-chromosomeTest = [2, 2, 2, 2, 2, 2, 2] # TODO: sizeof linkBundles!!
-InterQuant, Tirf = evaluateNetwork(Net, chromosomeTest)
+#chromosomeTest = [5, 5, 5, 5, 5, 5, 5] # TODO: sizeof linkBundles!!
+chromosomeTest = [4, 4, 4, 4, 4, 4, 4] # TODO: sizeof linkBundles!!
+#chromosomeTest = [3, 3, 3, 3, 3, 3, 3] # TODO: sizeof linkBundles!!
+Fitness = evaluateNetwork(Net, chromosomeTest)
 
 stopTime = timeit.default_timer()
+print('Fitness Value:', Fitness)
 print('Execution Time:', stopTime - startTime)
 
 # 5: Runs the Multi-Objective Algorithm
