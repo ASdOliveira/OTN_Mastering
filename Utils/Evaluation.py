@@ -126,6 +126,8 @@ def _allocateProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
 
 def _getShortestPathInMultigraph(G, Source, Target):
     edges = []
+    if not (G.has_node(Source) and G.has_node(Target)):
+        return edges
     all_edge_paths = nx.all_simple_edge_paths(G, Source, Target)
     sorted_all_edge_paths = sorted(list(all_edge_paths), key=lambda a: len(a))
     if len(sorted_all_edge_paths) > 0:
