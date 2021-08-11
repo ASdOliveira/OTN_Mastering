@@ -102,7 +102,7 @@ def _allocateProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
     IsProtectionAllocated = True
 
     for service in NetworkCopy.Services:
-        if service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP or ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION:
+        if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP) or (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
             Aux = deepcopy(NetworkGraphAuxiliary)
             edges = _getDisjointPath(Aux, service.NodeFrom, service.NodeTo, service.MainRoute)
 
@@ -157,7 +157,7 @@ def _GetTIRF(NetworkCopy, NetworkGraphAuxiliary):
         NetworkGraphCopy = _removeEdgesFromLinkBundle(NetworkGraphCopy, failureScenario)
 
         for service in NetworkCopy.Services:
-            if service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_RESTORATION or ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION:
+            if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_RESTORATION) or (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
                 # Let's allocate
                 # edges = _getDisjointPath(NetworkGraphCopy, service.NodeFrom, service.NodeTo, service.MainRoute)
                 edges = _getShortestPathInMultigraph(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
