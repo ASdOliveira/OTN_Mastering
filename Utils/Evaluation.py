@@ -38,16 +38,9 @@ def _calculateTIRF(network, chromosome):
 
     NetworkGraphAuxiliary = deepcopy(NetworkGraph)
 
-    IsAllServicesAllocated = _allocateServices(Network, NetworkGraph, NetworkGraphAuxiliary)
+    IsAllServicesAllocated = _allocateServicesAndProtection(Network, NetworkGraph, NetworkGraphAuxiliary)
 
     if not IsAllServicesAllocated:
-        # TODO: Check this penalty
-        TIRF = 1.0
-        return TIRF
-
-    IsProtectionRoutesAllocated = _allocateProtection(Network, NetworkGraph, NetworkGraphAuxiliary)
-
-    if not IsProtectionRoutesAllocated:
         # TODO: Check this penalty
         TIRF = 1.0
         return TIRF
@@ -56,7 +49,7 @@ def _calculateTIRF(network, chromosome):
     TIRF = _GetTIRF(Network, NetworkGraphAuxiliary)
 
     # DEBUG
-    # print("NodeFrom", "NodeTo", "MainRoute", "ProtectionRoute", sep= " | ")
+    # print("NodeFrom", "NodeTo", "MainRoute", "ProtectionRoute", sep=" | ")
     # for services in Network.Services:
     #     print(services.NodeFrom, services.NodeTo, services.MainRoute, services.ProtectionRoute, sep=" | ")
     return TIRF
@@ -72,56 +65,41 @@ def _convertToGraph(chromosome, TELinks, NetworkGraph):
         count += 1
 
 
-def _allocateServices(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
-    NonAllocatedServices = []
+def _allocateServicesAndProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
     IsServicesAllocated = True
 
     for service in NetworkCopy.Services:
         edges = _getShortestPathInMultigraph(NetworkGraphAuxiliary, service.NodeFrom, service.NodeTo)
 
-        AllocationIsCompleted = False
+        # allocate service
+        if len(edges) == 0:
+            IsServicesAllocated = False
+            break
 
-        for edge in edges:
-            TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
-            TELINK.IsBusy = True
-            service.MainRoute.append(edge[2])
-            AllocationIsCompleted = True
-            NetworkGraphAuxiliary.remove_edge(edge[0], edge[1], edge[2])
+        _allocate(edges, NetworkGraph, NetworkGraphAuxiliary, service.MainRoute)
 
-        if not AllocationIsCompleted:
-            NonAllocatedServices.append(service)
+        # Allocate Protection
+        if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP) or (
+                service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
 
-    if len(NonAllocatedServices) > 0:
-        IsServicesAllocated = False
+            Aux = deepcopy(NetworkGraphAuxiliary)
+            edges = _getDisjointPath(Aux, service.NodeFrom, service.NodeTo, service.MainRoute)
+
+            if len(edges) == 0:
+                IsServicesAllocated = False
+                break
+
+            _allocate(edges, NetworkGraph, NetworkGraphAuxiliary, service.ProtectionRoute)
 
     return IsServicesAllocated
 
 
-def _allocateProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
-    NonAllocatedProtection = []
-    IsProtectionAllocated = True
-
-    for service in NetworkCopy.Services:
-        if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP) or (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
-            Aux = deepcopy(NetworkGraphAuxiliary)
-            edges = _getDisjointPath(Aux, service.NodeFrom, service.NodeTo, service.MainRoute)
-
-            AllocationIsCompleted = False
-
-            for edge in edges:
-                TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
-                TELINK.IsBusy = True
-                service.ProtectionRoute.append(edge[2])
-                AllocationIsCompleted = True
-                NetworkGraphAuxiliary.remove_edge(edge[0], edge[1], edge[2])
-
-            if not AllocationIsCompleted:
-                NonAllocatedProtection.append(service)
-
-    if len(NonAllocatedProtection) > 0:
-        IsProtectionAllocated = False
-
-    return IsProtectionAllocated
+def _allocate(edges, NetworkGraph, NetworkGraphAuxiliary, serviceToAppend):
+    for edge in edges:
+        TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
+        TELINK.IsBusy = True
+        serviceToAppend.append(edge[2])
+        NetworkGraphAuxiliary.remove_edge(edge[0], edge[1], edge[2])
 
 
 def _getShortestPathInMultigraph(G, Source, Target):
@@ -157,19 +135,30 @@ def _GetTIRF(NetworkCopy, NetworkGraphAuxiliary):
         NetworkGraphCopy = _removeEdgesFromLinkBundle(NetworkGraphCopy, failureScenario)
 
         for service in NetworkCopy.Services:
-            if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_RESTORATION) or (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
-                # Let's allocate
-                # edges = _getDisjointPath(NetworkGraphCopy, service.NodeFrom, service.NodeTo, service.MainRoute)
-                edges = _getShortestPathInMultigraph(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
+            if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_RESTORATION) or (
+                    service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
 
-                TTR += 1.0
-                if len(edges) == 0:   # There isn't any route available
-                    IR += 1.0
+                    needRestoration = False
+                    for LB in failureScenario:
+                        if needRestoration:
+                            break
+                        for telink in service.MainRoute:
+                            if LB in telink:
+                                # This service will be affected by a failure, need a restoration route
+                                needRestoration = True
+                                break
+                    if needRestoration:
+                        # Let's allocate
+                        edges = _getShortestPathInMultigraph(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
 
-                for edge in edges:
-                    NetworkGraphCopy.remove_edge(edge[0], edge[1], edge[2])
+                        TTR += 1.0
+                        if len(edges) == 0:  # There isn't any route available
+                            IR += 1.0
 
-    return float(IR/TTR)
+                        for edge in edges:
+                            NetworkGraphCopy.remove_edge(edge[0], edge[1], edge[2])
+
+    return float(IR / TTR)
 
 
 def _removeEdgesFromLinkBundle(Graph, LinkBundlesToRemove):
