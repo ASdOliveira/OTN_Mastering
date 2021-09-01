@@ -1,4 +1,3 @@
-import numpy as np
 from jmetal.algorithm.multiobjective.nsgaii import NSGAII
 from jmetal.core.quality_indicator import HyperVolume
 from jmetal.operator import SBXCrossover, PolynomialMutation, IntegerPolynomialMutation
@@ -23,7 +22,7 @@ for executions in range(30):
 
     problem = OTNProblem(Net, len(Net.LinkBundles))
 
-    max_evaluations = 20
+    max_evaluations = 2000
 
     algorithm = NSGAII(
         problem=problem,
@@ -31,19 +30,13 @@ for executions in range(30):
         offspring_population_size=20,
         mutation=IntegerPolynomialMutation(probability=0.05, distribution_index=20),
         crossover=IntegerSBXCrossover(probability=0.3, distribution_index=20),
-        #termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
+        termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
     )
-    hv = HyperVolume([96, 1.0])
-    hv.is_minimization = True
 
-    termination = StoppingByQualityIndicator(hv, 0.0, 1.05)
-    my_dict = {'SOLUTIONS': algorithm.solutions}
-    termination.update(**my_dict)
-
-    algorithm.termination_criterion = StoppingByQualityIndicator(hv, 0.0, 1.05)
+    progress_bar = ProgressBarObserver(max=max_evaluations)
+    algorithm.observable.register(progress_bar)
 
     algorithm.run()
-
     solutions = algorithm.get_result()
 
     front = get_non_dominated_solutions(solutions)
@@ -60,11 +53,13 @@ for executions in range(30):
 
     BestTirf.append(TirfValues[0])
     BestInterfaceQuantity.append(InterfaceQuantities[0])
-    print(TirfValues[0], InterfaceQuantities[0])
+    print(InterfaceQuantities[0], TirfValues[0])
+
 
 TheBestTirf = sum(BestTirf) / 30.0
 TheBestQuantity = sum(BestInterfaceQuantity) / 30
 print(TheBestQuantity, TheBestTirf)
-
+#plot_front = Plot(title='Pareto front approximation', axis_labels=['Interfaces', 'TIRF'])
+#plot_front.plot(paretoFront, label='NSGAII-OTN')
 stopTime = timeit.default_timer()
 print('Execution Time:', stopTime - startTime)
