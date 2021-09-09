@@ -138,25 +138,35 @@ def _GetTIRF(NetworkCopy, NetworkGraphAuxiliary):
             if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_RESTORATION) or (
                     service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
 
-                    needRestoration = False
-                    for LB in failureScenario:
-                        if needRestoration:
-                            break
-                        for telink in service.MainRoute:
-                            if LB in telink:
-                                # This service will be affected by a failure, need a restoration route
-                                needRestoration = True
-                                break
-                    if needRestoration:
-                        # Let's allocate
-                        edges = _getShortestPathInMultigraph(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
+                needRestoration = False
+                # if len(service.MainRoute) == 1:
+                #     for LB in failureScenario:
+                #         if needRestoration:
+                #             break
+                #         if LB in service.MainRoute[0]:
+                #             needRestoration = True
+                #             break
+                # else:
+                IsScenarioFound1 = False
+                IsScenarioFound2 = False
 
-                        TTR += 1.0
-                        if len(edges) == 0:  # There isn't any route available
-                            IR += 1.0
+                for telink in service.MainRoute:
+                    if failureScenario[0] in telink:
+                        IsScenarioFound1 = True
+                    if failureScenario[1] in telink:
+                        IsScenarioFound2 = True
+                needRestoration = IsScenarioFound2 or IsScenarioFound1
 
-                        for edge in edges:
-                            NetworkGraphCopy.remove_edge(edge[0], edge[1], edge[2])
+                if needRestoration:
+                    # Let's allocate
+                    edges = _getShortestPathInMultigraph(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
+
+                    TTR += 1.0
+                    if len(edges) == 0:  # There isn't any route available
+                        IR += 1.0
+
+                    for edge in edges:
+                        NetworkGraphCopy.remove_edge(edge[0], edge[1], edge[2])
 
     return float(IR / TTR)
 
