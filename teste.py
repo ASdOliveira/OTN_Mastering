@@ -14,10 +14,10 @@ startTime = timeit.default_timer()
 
 BestTirf = []
 BestInterfaceQuantity = []
-
+timesToRun = 30
 Net = Network(folderName="Topologia1")
 
-for executions in range(30):
+for executions in range(timesToRun):
     print("Interation number:", executions)
 
     problem = OTNProblem(Net, len(Net.LinkBundles))
@@ -56,8 +56,8 @@ for executions in range(30):
     print(InterfaceQuantities[0], TirfValues[0])
 
 
-TheBestTirf = sum(BestTirf) / 30.0
-TheBestQuantity = sum(BestInterfaceQuantity) / 30
+TheBestTirf = sum(BestTirf) / float(timesToRun)
+TheBestQuantity = sum(BestInterfaceQuantity) / timesToRun
 print(TheBestQuantity, TheBestTirf)
 #plot_front = Plot(title='Pareto front approximation', axis_labels=['Interfaces', 'TIRF'])
 #plot_front.plot(paretoFront, label='NSGAII-OTN')

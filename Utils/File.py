@@ -76,3 +76,11 @@ def _readServiceCSV(folderName):
                 Services.append(Service(NodeTo=row[0], NodeFrom=row[1], ServiceType=str(row[2])))
                 line_count += 1
     return Services
+
+
+def WriteToFile(filename, message):
+    relativePath = "../Output/" + str(filename) + ".txt"
+    path = Path(__file__).parent / relativePath
+
+    with open(path, 'a') as log_file:
+        log_file.write(message)
