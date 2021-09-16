@@ -14,7 +14,7 @@ startTime = timeit.default_timer()
 
 BestTirf = []
 BestInterfaceQuantity = []
-timesToRun = 30
+timesToRun = 1
 Net = Network(folderName="Topologia1")
 
 for executions in range(timesToRun):
@@ -22,12 +22,12 @@ for executions in range(timesToRun):
 
     problem = OTNProblem(Net, len(Net.LinkBundles))
 
-    max_evaluations = 2000
+    max_evaluations = 25000
 
     algorithm = NSGAII(
         problem=problem,
-        population_size=20,
-        offspring_population_size=20,
+        population_size=400,
+        offspring_population_size=200,
         mutation=IntegerPolynomialMutation(probability=0.05, distribution_index=20),
         crossover=IntegerSBXCrossover(probability=0.3, distribution_index=20),
         termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
@@ -47,17 +47,19 @@ for executions in range(timesToRun):
     for f in front:
         InterfaceQuantities.append(f.objectives[0])
         TirfValues.append(f.objectives[1])
-        # print(f.objectives[0], f.objectives[1])
+        print(f.objectives[0], f.objectives[1], f.variables)
 
     TirfValues, InterfaceQuantities = zip(*sorted(zip(TirfValues, InterfaceQuantities)))
 
     BestTirf.append(TirfValues[0])
     BestInterfaceQuantity.append(InterfaceQuantities[0])
+    print("Individual with zero TIRF: ")
     print(InterfaceQuantities[0], TirfValues[0])
 
 
 TheBestTirf = sum(BestTirf) / float(timesToRun)
 TheBestQuantity = sum(BestInterfaceQuantity) / timesToRun
+print("medium: ")
 print(TheBestQuantity, TheBestTirf)
 #plot_front = Plot(title='Pareto front approximation', axis_labels=['Interfaces', 'TIRF'])
 #plot_front.plot(paretoFront, label='NSGAII-OTN')

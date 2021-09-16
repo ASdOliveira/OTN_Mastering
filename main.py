@@ -1,17 +1,27 @@
 from Models.Network import Network
 from Utils.Evaluation import evaluateNetwork
+from Utils.Log import Log
 import timeit
 
 # 1: Load the Network Topology
 # 2: Load the service (demand)
 # 3: Model the data
 # 4: Calculate the fails Scenario
+
 startTime = timeit.default_timer()
+log = Log()
+
+log.log("teste")
+log.save()
 
 Net = Network(folderName="Topologia1")
-#chromosomeTest = [5, 5, 5, 5, 5, 5, 5] # TODO: sizeof linkBundles!!
-chromosomeTest = [4, 4, 4, 4, 4, 4, 4] # TODO: sizeof linkBundles!!
+#chromosomeTest = [5,  5,5, 5, 5, 5, 5] # TODO: sizeof linkBundles!!
+#chromosomeTest = [4, 4, 4, 4, 4, 4, 4] # TODO: sizeof linkBundles!!
 #chromosomeTest = [3, 3, 3, 3, 3, 3, 3] # TODO: sizeof linkBundles!!
+
+chromosomeTest = [2, 2, 3, 3, 2, 2, 2] # TODO: sizeof linkBundles!!
+#chromosomeTest = [2, 2, 3, 2, 2, 2, 2] # TODO: sizeof linkBundles!!
+#chromosomeTest = [2, 2, 2, 2, 2, 2, 2] # TODO: sizeof linkBundles!!
 Fitness = evaluateNetwork(Net, chromosomeTest)
 
 stopTime = timeit.default_timer()
