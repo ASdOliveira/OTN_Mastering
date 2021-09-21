@@ -19,7 +19,7 @@ Net = Network(folderName="Topologia1")
 #chromosomeTest = [4, 4, 4, 4, 4, 4, 4] # TODO: sizeof linkBundles!!
 #chromosomeTest = [3, 3, 3, 3, 3, 3, 3] # TODO: sizeof linkBundles!!
 
-chromosomeTest = [2, 2, 3, 3, 2, 2, 2] # TODO: sizeof linkBundles!!
+chromosomeTest = [2, 2, 2, 2, 2, 2, 2] # TODO: sizeof linkBundles!!
 #chromosomeTest = [2, 2, 3, 2, 2, 2, 2] # TODO: sizeof linkBundles!!
 #chromosomeTest = [2, 2, 2, 2, 2, 2, 2] # TODO: sizeof linkBundles!!
 Fitness = evaluateNetwork(Net, chromosomeTest)

@@ -2,6 +2,9 @@ from copy import deepcopy
 import networkx as nx
 from Models.TELink import TELink
 from Utils.ServiceEnum import ServiceEnum
+import math
+
+totalLinkBundleDict = {}
 
 
 def evaluateNetwork(network, chromosome):
@@ -57,11 +60,19 @@ def _calculateTIRF(network, chromosome):
 
 def _convertToGraph(chromosome, TELinks, NetworkGraph):
     count = 0
+    totalLinkBundleDict.clear()
+
     for gene in chromosome:
         TELinkAux = TELinks[count]
+        if gene == 0:
+            amount = math.inf
+        else:
+            amount = (float)(1.0 / gene)
+        totalLinkBundleDict[TELinkAux.LinkBundleId] = amount
         for x in range(gene):
             NetworkGraph.add_edge(TELinkAux.NodeFrom, TELinkAux.NodeTo, key=TELinkAux.LinkBundleId + "_" + str(x),
-                                  link=TELink(TELinkAux.NodeFrom, TELinkAux.NodeTo, TELinkAux.LinkBundleId))
+                                  link=TELink(TELinkAux.NodeFrom, TELinkAux.NodeTo, TELinkAux.LinkBundleId),
+                                  weight=amount)
         count += 1
 
 
@@ -69,7 +80,7 @@ def _allocateServicesAndProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxili
     IsServicesAllocated = True
 
     for service in NetworkCopy.Services:
-        edges = _getShortestPathInMultigraph(NetworkGraphAuxiliary, service.NodeFrom, service.NodeTo)
+        edges = _getShortestPathMultiedgeByWeight(NetworkGraphAuxiliary, service.NodeFrom, service.NodeTo)
 
         # allocate service
         if len(edges) == 0:
@@ -96,11 +107,11 @@ def _allocateServicesAndProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxili
 
 def _allocate(edges, NetworkGraph, NetworkGraphAuxiliary, serviceToAppend):
     for edge in edges:
+        _updateWeight(NetworkGraph, edge)
         TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
         TELINK.IsBusy = True
         serviceToAppend.append(edge[2])
         NetworkGraphAuxiliary.remove_edge(edge[0], edge[1], edge[2])
-
 
 def _getShortestPathInMultigraph(G, Source, Target):
     edges = []
@@ -119,7 +130,7 @@ def _getDisjointPath(G, Source, Target, PathToAvoid):
     for path in PathToAvoid:
         LinkBundleList.append(path.split("_")[0])  # Given LB1_0, the result will be LB1
 
-    G = _removeEdgesFromLinkBundle(G, LinkBundleList)
+    G = _removeEdgesFromLinkBundle(G, LinkBundleList) #TODO: ESSE G PODE CAUSAR ERRO!!!! ANALISAR ISSO!!!!!
 
     DisjointPath = _getShortestPathInMultigraph(G, Source, Target)
     return DisjointPath
@@ -138,15 +149,6 @@ def _GetTIRF(NetworkCopy, NetworkGraphAuxiliary):
             if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_RESTORATION) or (
                     service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
 
-                needRestoration = False
-                # if len(service.MainRoute) == 1:
-                #     for LB in failureScenario:
-                #         if needRestoration:
-                #             break
-                #         if LB in service.MainRoute[0]:
-                #             needRestoration = True
-                #             break
-                # else:
                 IsScenarioFound1 = False
                 IsScenarioFound2 = False
 
@@ -181,3 +183,37 @@ def _removeEdgesFromLinkBundle(Graph, LinkBundlesToRemove):
 
     Graph.remove_edges_from(edgesToBeRemoved)
     return Graph
+
+
+def _getShortestPathMultiedgeByWeight(G, Source, Target):
+    edges = []
+    id = 0
+    weightDict = {}
+    if not (G.has_node(Source) and G.has_node(Target)):
+        return edges
+    all_edge_paths = nx.all_simple_edge_paths(G, Source, Target)
+
+    sorted_all_edge_paths = sorted(list(all_edge_paths), key=lambda a: len(a))
+    for single_path in sorted_all_edge_paths:
+        weight = 0
+        for edge in single_path:
+            weight += (G.get_edge_data(edge[0], edge[1])[edge[2]]).get("weight")
+        weightDict[id] = weight
+        id += 1
+
+    if len(sorted_all_edge_paths) > 0:
+        best_key = min(weightDict, key=weightDict.get)
+        edges = sorted_all_edge_paths[best_key]
+    return edges
+
+
+def _updateWeight(NetworkGraph, edge):
+    linkbundle = edge[2].split("_")[0]
+    amount = totalLinkBundleDict[linkbundle]
+    amount = float(1.0 / amount)
+    newAmount = float(1.0 / (amount - 1))
+    totalLinkBundleDict[linkbundle] = newAmount
+    edgesToFilter = NetworkGraph.get_edge_data(edge[0], edge[1])
+    for edges in edgesToFilter:
+        if linkbundle in edges:
+            NetworkGraph[edge[0]][edge[1]][edges]["weight"] = newAmount
