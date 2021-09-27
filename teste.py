@@ -7,8 +7,9 @@ from jmetal.util.termination_criterion import StoppingByEvaluations, StoppingByQ
 from jmetal.lab.visualization.plotting import Plot
 from jmetal.util.solution import get_non_dominated_solutions
 from Models.Network import Network
-from Problem import OTNProblem
 import timeit
+
+from Problem.ProblemWrapper import OTNProblem
 
 startTime = timeit.default_timer()
 
@@ -22,7 +23,7 @@ for executions in range(timesToRun):
 
     problem = OTNProblem(Net, len(Net.LinkBundles))
 
-    max_evaluations = 25000
+    max_evaluations = 250
 
     algorithm = NSGAII(
         problem=problem,

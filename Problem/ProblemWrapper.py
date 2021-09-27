@@ -1,6 +1,6 @@
 from jmetal.core.problem import IntegerProblem
 from jmetal.core.solution import IntegerSolution
-from Utils import Evaluation
+from Problem import Evaluation
 
 
 class OTNProblem(IntegerProblem):

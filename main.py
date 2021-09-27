@@ -1,6 +1,5 @@
 from Models.Network import Network
-from Utils.Evaluation import evaluateNetwork
-from Utils.Log import Log
+from Problem.Evaluation import evaluateNetwork
 import timeit
 
 # 1: Load the Network Topology
@@ -9,10 +8,10 @@ import timeit
 # 4: Calculate the fails Scenario
 
 startTime = timeit.default_timer()
-log = Log()
-
-log.log("teste")
-log.save()
+# log = Log()
+#
+# log.log("teste")
+# log.save()
 
 Net = Network(folderName="Topologia1")
 #chromosomeTest = [5,  5,5, 5, 5, 5, 5] # TODO: sizeof linkBundles!!
