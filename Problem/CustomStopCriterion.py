@@ -30,7 +30,7 @@ class StopByHyperVolume(TerminationCriterion):
 
             if variation <= self.HyperVolumeStagnationPercentage:
                 self.counter += 1
-                if self.counter >= 10:
+                if self.counter >= 15:
                     self.HasReachVariation = True
                 else:
                     self.lastHyperVolume = copy.deepcopy(self.currentHyperVolume)
@@ -43,11 +43,4 @@ class StopByHyperVolume(TerminationCriterion):
 
     @property
     def is_met(self):
-        # variation = float(abs(self.lastHyperVolume - self.currentHyperVolume) / self.currentHyperVolume)
-        #
-        # if variation <= self.HyperVolumeStagnationPercentage:
-        #     return True
-        # else:
-        #     self.lastHyperVolume = copy.deepcopy(self.currentHyperVolume)
-        #     return False
         return self.HasReachVariation

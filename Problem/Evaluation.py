@@ -42,7 +42,7 @@ def _calculateTIRF(network, chromosome):
 
     if not IsAllServicesAllocated:
         # TODO: Check this penalty
-        TIRF = 1.0
+        TIRF = 2.0
         return TIRF
 
     # At this point the Network is allocated with work and protection routes.
