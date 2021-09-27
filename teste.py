@@ -9,6 +9,7 @@ from jmetal.util.solution import get_non_dominated_solutions
 from Models.Network import Network
 import timeit
 
+from Problem.CustomStopCriterion import StopByHyperVolume
 from Problem.ProblemWrapper import OTNProblem
 
 startTime = timeit.default_timer()
@@ -22,20 +23,21 @@ for executions in range(timesToRun):
     print("Interation number:", executions)
 
     problem = OTNProblem(Net, len(Net.LinkBundles))
-
+    stopCriterion = StopByHyperVolume(0.03, [200, 1.1])  # To topology 1, 200 is enough
     max_evaluations = 250
 
     algorithm = NSGAII(
         problem=problem,
-        population_size=400,
-        offspring_population_size=200,
+        population_size=20,
+        offspring_population_size=20,
         mutation=IntegerPolynomialMutation(probability=0.05, distribution_index=20),
         crossover=IntegerSBXCrossover(probability=0.3, distribution_index=20),
-        termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
+        # termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
+        termination_criterion=stopCriterion
     )
 
-    progress_bar = ProgressBarObserver(max=max_evaluations)
-    algorithm.observable.register(progress_bar)
+    # progress_bar = ProgressBarObserver(max=max_evaluations)
+    # algorithm.observable.register(progress_bar)
 
     algorithm.run()
     solutions = algorithm.get_result()
