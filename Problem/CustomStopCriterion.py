@@ -44,3 +44,33 @@ class StopByHyperVolume(TerminationCriterion):
     @property
     def is_met(self):
         return self.HasReachVariation
+
+
+class StoppingByEvaluationsCustom(TerminationCriterion):
+
+    def __init__(self, max_evaluations: int, reference_point: [float] = None):
+        super(StoppingByEvaluationsCustom, self).__init__()
+        self.max_evaluations = max_evaluations
+        self.evaluations = 0
+        self.referencePoint = reference_point
+        self.hyperVolumes = []
+
+    def update(self, *args, **kwargs):
+        self.evaluations = kwargs['EVALUATIONS']
+        solutions = kwargs['SOLUTIONS']
+
+        if solutions:
+            variables = []
+            for s in solutions:
+                variables.append(s.objectives)
+
+            hv = HyperVolume(self.referencePoint)
+            hv.is_minimization = True
+            self.hyperVolumes.append(hv.compute(variables))
+
+    @property
+    def is_met(self):
+        return self.evaluations >= self.max_evaluations
+
+    def get_hyperVolumes(self):
+        return self.hyperVolumes

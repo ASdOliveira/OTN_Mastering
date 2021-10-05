@@ -2,7 +2,7 @@ from datetime import datetime
 from Utils.File import WriteToFile
 
 
-class Log:
+class LogSingleton:
     _instance = None
     message = ""
 
@@ -17,6 +17,20 @@ class Log:
     def log(self, msg):
         self.message += msg
         self.message += "\n"
+
+    def save(self):
+        WriteToFile(self.fileName, self.message)
+
+
+class Log:
+    message = ""
+
+    def __init__(self, filename):
+        self.fileName = str(filename)
+
+    def log(self, msg):
+        self.message.__add__(msg)
+        self.message.__add__("\n")
 
     def save(self):
         WriteToFile(self.fileName, self.message)

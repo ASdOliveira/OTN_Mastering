@@ -9,8 +9,9 @@ from jmetal.util.solution import get_non_dominated_solutions
 from Models.Network import Network
 import timeit
 
-from Problem.CustomStopCriterion import StopByHyperVolume
+from Problem.CustomStopCriterion import StopByHyperVolume, StoppingByEvaluationsCustom
 from Problem.ProblemWrapper import OTNProblem
+from Utils.Log import Log
 
 startTime = timeit.default_timer()
 
@@ -18,8 +19,7 @@ BestTirf = []
 BestInterfaceQuantity = []
 solutionsResult = []
 frontResult = 0
-timesToRun = 30
-
+timesToRun = 1
 
 Net = Network(folderName="Topologia1")
 
@@ -27,8 +27,8 @@ for executions in range(timesToRun):
     print("Interation number:", executions)
 
     problem = OTNProblem(Net, len(Net.LinkBundles))
-    stopCriterion = StopByHyperVolume(0.03, [200, 2.1])  # To topology 1, 200 is enough
-    max_evaluations = 250
+    max_evaluations = 40
+    stopCriterion = StoppingByEvaluationsCustom(max_evaluations, [200, 2.1])  # To topology 1, 200 is enough
 
     algorithm = NSGAII(
         problem=problem,
@@ -40,8 +40,8 @@ for executions in range(timesToRun):
         termination_criterion=stopCriterion
     )
 
-    # progress_bar = ProgressBarObserver(max=max_evaluations)
-    # algorithm.observable.register(progress_bar)
+    progress_bar = ProgressBarObserver(max=max_evaluations)
+    algorithm.observable.register(progress_bar)
 
     algorithm.run()
     solutions = algorithm.get_result()
@@ -52,24 +52,9 @@ for executions in range(timesToRun):
 
     if executions == (timesToRun - 1):
         frontResult = get_non_dominated_solutions(solutionsResult)
-    # for f in front:
-    #     InterfaceQuantities.append(f.objectives[0])
-    #     TirfValues.append(f.objectives[1])
-    #     print(f.objectives[0], f.objectives[1], f.variables)
 
-    # TirfValues, InterfaceQuantities = zip(*sorted(zip(TirfValues, InterfaceQuantities)))
-
-    # BestTirf.append(TirfValues[0])
-    # BestInterfaceQuantity.append(InterfaceQuantities[0])
-    # print("Individual with zero TIRF: ")
-    # print(InterfaceQuantities[0], TirfValues[0])
-
-
-# TheBestTirf = sum(BestTirf) / float(timesToRun)
-# TheBestQuantity = sum(BestInterfaceQuantity) / timesToRun
-# print("medium: ")
-# print(TheBestQuantity, TheBestTirf)
 plot_front = Plot(title='Pareto front approximation', axis_labels=['Interfaces', 'TIRF'])
 plot_front.plot(frontResult, label='NSGAII-OTN')
+
 stopTime = timeit.default_timer()
 print('Execution Time:', stopTime - startTime)
