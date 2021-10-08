@@ -23,14 +23,13 @@ class LogSingleton:
 
 
 class Log:
-    message = ""
-
     def __init__(self, filename):
         self.fileName = str(filename)
+        self.message = ""
 
     def log(self, msg):
-        self.message.__add__(msg)
-        self.message.__add__("\n")
+        self.message += str(msg)
+        self.message += "\n"
 
     def save(self):
         WriteToFile(self.fileName, self.message)
