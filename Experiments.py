@@ -1,6 +1,7 @@
 from jmetal.algorithm.multiobjective import SPEA2, HYPE
 from jmetal.algorithm.multiobjective.nsgaii import NSGAII
-from jmetal.core.quality_indicator import GenerationalDistance, EpsilonIndicator, HyperVolume
+from jmetal.core.quality_indicator import GenerationalDistance, EpsilonIndicator, HyperVolume, \
+    InvertedGenerationalDistance
 from jmetal.core.solution import IntegerSolution
 from jmetal.operator import IntegerPolynomialMutation
 from jmetal.operator.crossover import IntegerSBXCrossover
@@ -24,7 +25,7 @@ BestInterfaceQuantity = []
 solutionsResult = []
 frontResult = 0
 
-max_evaluations = 100
+max_evaluations = 1000
 Net = Network(folderName="Topologia1")
 problemOTN = OTNProblem(Net, len(Net.LinkBundles))
 stopCriterion = StoppingByEvaluationsCustom(max_evaluations, [200, 2.1])  # To topology 1, 200 is enough
@@ -90,18 +91,18 @@ def configure_experiment(problems: dict, n_run: int):
 
 if __name__ == '__main__':
     # Configure the experiments
-   # jobs = configure_experiment(problems={'OTN': problemOTN}, n_run=1)
+    jobs = configure_experiment(problems={'OTN': problemOTN}, n_run=30)
 
     # Run the study
     output_directory = 'data'
-   # experiment = Experiment(output_dir=output_directory, jobs=jobs)
-   # experiment.run()
+    experiment = Experiment(output_dir=output_directory, jobs=jobs)
+    experiment.run()
 
     Filter.RemovePenalty(output_directory)
 
     # Reference fronts is the folder where is the reference to be compared with.
     generate_summary_from_experiment(
         input_dir=output_directory,
-        reference_fronts='C:\\Users\\aryss\\Documents\\Repositories\\OTN_Mastering\\data\\NSGAII\\OTN',
-        quality_indicators=[GenerationalDistance(), EpsilonIndicator(), HyperVolume([200, 2.1])]
+        reference_fronts='C:\\Users\\aryss\\Documents\\Repositories\\OTN_Mastering\\Output\\CT1\\8 services',
+        quality_indicators=[InvertedGenerationalDistance(), EpsilonIndicator(), HyperVolume([200, 2.1])]
     )
