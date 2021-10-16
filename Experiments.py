@@ -1,10 +1,12 @@
-from jmetal.algorithm.multiobjective import SPEA2, HYPE
+from jmetal.algorithm.multiobjective import SPEA2, HYPE, SMPSO, MOCell
 from jmetal.algorithm.multiobjective.nsgaii import NSGAII
 from jmetal.core.quality_indicator import GenerationalDistance, EpsilonIndicator, HyperVolume, \
     InvertedGenerationalDistance
 from jmetal.core.solution import IntegerSolution
 from jmetal.operator import IntegerPolynomialMutation
 from jmetal.operator.crossover import IntegerSBXCrossover
+from jmetal.util.archive import CrowdingDistanceArchive
+from jmetal.util.neighborhood import C9
 from jmetal.util.termination_criterion import StoppingByEvaluations
 
 import Utils
@@ -25,7 +27,7 @@ BestInterfaceQuantity = []
 solutionsResult = []
 frontResult = 0
 
-max_evaluations = 1000
+max_evaluations = 2000
 Net = Network(folderName="Topologia1")
 problemOTN = OTNProblem(Net, len(Net.LinkBundles))
 stopCriterion = StoppingByEvaluationsCustom(max_evaluations, [200, 2.1])  # To topology 1, 200 is enough
@@ -82,6 +84,22 @@ def configure_experiment(problems: dict, n_run: int):
                         termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
                     ),
                     algorithm_tag='HYPE',
+                    problem_tag=problem_tag,
+                    run=run,
+                )
+            )
+            jobs.append(
+                Job(
+                    algorithm=MOCell(
+                        problem=problem,
+                        population_size=20,
+                        neighborhood=C9(10, 10),
+                        archive=CrowdingDistanceArchive(100),
+                        mutation=IntegerPolynomialMutation(probability=0.05, distribution_index=20),
+                        crossover=IntegerSBXCrossover(probability=0.3, distribution_index=20),
+                        termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
+                    ),
+                    algorithm_tag='MOCELL',
                     problem_tag=problem_tag,
                     run=run,
                 )
