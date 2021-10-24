@@ -16,11 +16,17 @@ if __name__ == '__main__':
     # Statistical lab
 
     avg = compute_mean_indicator(filename='QualityIndicatorSummary.csv', indicator_name='HV')
+    print('------------Hypervolume average----------------')
     print(avg)
 
     # Non-parametric test
     print('-------- Sign Test --------')
+    print(sign_test(avg[['NSGAII', 'MOCELL']]))
+    print('-------- Sign Test --------')
     print(sign_test(avg[['NSGAII', 'HYPE']]))
+    print('-------- Sign Test --------')
+    print(sign_test(avg[['NSGAII', 'SPEA2']]))
+
     print('-------- Friedman Test --------')
     print(friedman_test(avg))
     print('-------- Friedman Aligned Rank Test --------')
@@ -34,11 +40,13 @@ if __name__ == '__main__':
     print('z values \n', z)
     print('p-values \n', p_val)
     print('adjusted p-values \n', adj_pval)
+
     print('-------- Friedman Aligned Rank Post-Hoc Test --------')
     z, p_val, adj_pval = friedman_aligned_ph_test(avg, apv_procedure='Shaffer')
     print('z values \n', z)
     print('p-values \n', p_val)
     print('adjusted p-values \n', adj_pval)
+
     print('-------- QuadeTest Post-Hoc Test --------')
     z, p_val, adj_pval = quade_ph_test(avg, apv_procedure='Holm')
     print('z values \n', z)
@@ -47,7 +55,7 @@ if __name__ == '__main__':
 
     # Plot critical distance
 
-    CDplot(avg.T, alpha=0.15, higher_is_better=True)
+    # CDplot(avg.T, alpha=0.15, higher_is_better=True)
 
     print('-------- Bayesian Sign Test --------')
     bst, DProcess = bayesian_sign_test(avg[['NSGAII', 'HYPE']], rope_limits=[-0.002, 0.002],

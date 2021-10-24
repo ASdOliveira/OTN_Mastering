@@ -93,7 +93,7 @@ def configure_experiment(problems: dict, n_run: int):
                     algorithm=MOCell(
                         problem=problem,
                         population_size=20,
-                        neighborhood=C9(10, 10),
+                        neighborhood=C9(4, 4),
                         archive=CrowdingDistanceArchive(100),
                         mutation=IntegerPolynomialMutation(probability=0.05, distribution_index=20),
                         crossover=IntegerSBXCrossover(probability=0.3, distribution_index=20),
