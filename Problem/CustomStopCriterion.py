@@ -48,12 +48,14 @@ class StopByHyperVolume(TerminationCriterion):
 
 class StoppingByEvaluationsCustom(TerminationCriterion):
 
-    def __init__(self, max_evaluations: int, reference_point: [float] = None):
+    def __init__(self, max_evaluations: int, reference_point: [float] = None, outputDirectory='HIST'):
         super(StoppingByEvaluationsCustom, self).__init__()
         self.max_evaluations = max_evaluations
         self.evaluations = 0
         self.referencePoint = reference_point
         self.hyperVolumes = []
+        self.IGDs = []
+        self.outputDirectory = outputDirectory
 
     def update(self, *args, **kwargs):
         self.evaluations = kwargs['EVALUATIONS']
@@ -71,6 +73,3 @@ class StoppingByEvaluationsCustom(TerminationCriterion):
     @property
     def is_met(self):
         return self.evaluations >= self.max_evaluations
-
-    def get_hyperVolumes(self):
-        return self.hyperVolumes
