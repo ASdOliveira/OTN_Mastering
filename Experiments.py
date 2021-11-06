@@ -1,10 +1,11 @@
-from jmetal.algorithm.multiobjective import SPEA2, HYPE, SMPSO, MOCell
+from jmetal.algorithm.multiobjective import SPEA2, HYPE, SMPSO, MOCell, MOEAD
 from jmetal.algorithm.multiobjective.nsgaii import NSGAII
 from jmetal.core.quality_indicator import GenerationalDistance, EpsilonIndicator, HyperVolume, \
     InvertedGenerationalDistance
 from jmetal.core.solution import IntegerSolution
-from jmetal.operator import IntegerPolynomialMutation
-from jmetal.operator.crossover import IntegerSBXCrossover
+from jmetal.operator import IntegerPolynomialMutation, PolynomialMutation
+from jmetal.operator.crossover import IntegerSBXCrossover, DifferentialEvolutionCrossover
+from jmetal.util.aggregative_function import Tschebycheff
 from jmetal.util.archive import CrowdingDistanceArchive
 from jmetal.util.neighborhood import C9
 from jmetal.util.termination_criterion import StoppingByEvaluations
@@ -14,7 +15,7 @@ from Models.Network import Network
 import timeit
 
 from Problem.CustomStopCriterion import StoppingByEvaluationsCustom
-from Problem.ProblemWrapper import OTNProblem
+from Problem.ProblemWrapper import OTNProblem, OTNProblemFloat
 
 from jmetal.lab.experiment import Experiment, Job, generate_summary_from_experiment
 
@@ -30,6 +31,7 @@ frontResult = 0
 max_evaluations = 2000
 Net = Network(folderName="Topologia1")
 problemOTN = OTNProblem(Net, len(Net.LinkBundles))
+# problemOTN = OTNProblemFloat(Net, len(Net.LinkBundles))
 stopCriterion = StoppingByEvaluationsCustom(max_evaluations, [200, 2.1])  # To topology 1, 200 is enough
 
 reference_point = IntegerSolution([0], [8], problemOTN.number_of_objectives, )
@@ -100,6 +102,39 @@ def configure_experiment(problems: dict, n_run: int):
                         termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
                     ),
                     algorithm_tag='MOCELL',
+                    problem_tag=problem_tag,
+                    run=run,
+                )
+            )
+            jobs.append(
+                Job(
+                    algorithm=MOEAD(
+                        problem=problem,
+                        population_size=20,
+                        crossover=DifferentialEvolutionCrossover(CR=1.0, F=0.5, K=0.5),
+                        mutation=PolynomialMutation(probability=0.05, distribution_index=20),
+                        aggregative_function=Tschebycheff(dimension=problem.number_of_objectives),
+                        neighbor_size=20,
+                        neighbourhood_selection_probability=0.9,
+                        max_number_of_replaced_solutions=2,
+                        weight_files_path='resources/MOEAD_weights',
+                        termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
+                    ),
+                    algorithm_tag='MOEAD',
+                    problem_tag=problem_tag,
+                    run=run,
+                )
+            )
+            jobs.append(
+                Job(
+                    algorithm=SMPSO(
+                        problem=problem,
+                        swarm_size=20,
+                        mutation=PolynomialMutation(probability=0.05, distribution_index=20),
+                        leaders=CrowdingDistanceArchive(20),
+                        termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
+                    ),
+                    algorithm_tag='SMPSO',
                     problem_tag=problem_tag,
                     run=run,
                 )

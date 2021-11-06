@@ -16,7 +16,7 @@ def _calculateInterfacesQuantity(chromosome):
      because each TeLink is connected to two interface (one per OTS)"""
     InterfacesQuantities = 0
     for gene in chromosome:
-        InterfacesQuantities += (gene * 2)
+        InterfacesQuantities += (round(gene) * 2)
     return InterfacesQuantities
 
 
@@ -59,7 +59,7 @@ def _convertToGraph(chromosome, TELinks, NetworkGraph):
     count = 0
     for gene in chromosome:
         TELinkAux = TELinks[count]
-        for x in range(gene):
+        for x in range(round(gene)):
             NetworkGraph.add_edge(TELinkAux.NodeFrom, TELinkAux.NodeTo, key=TELinkAux.LinkBundleId + "_" + str(x),
                                   link=TELink(TELinkAux.NodeFrom, TELinkAux.NodeTo, TELinkAux.LinkBundleId))
         count += 1
