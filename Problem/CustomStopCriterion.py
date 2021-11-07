@@ -1,5 +1,5 @@
 import copy
-
+import os
 from jmetal.core.quality_indicator import HyperVolume
 from jmetal.util.termination_criterion import TerminationCriterion
 
@@ -48,14 +48,16 @@ class StopByHyperVolume(TerminationCriterion):
 
 class StoppingByEvaluationsCustom(TerminationCriterion):
 
-    def __init__(self, max_evaluations: int, reference_point: [float] = None, outputDirectory='HIST'):
+    def __init__(self, max_evaluations: int, reference_point: [float] = None, AlgorithmName=''):
         super(StoppingByEvaluationsCustom, self).__init__()
         self.max_evaluations = max_evaluations
         self.evaluations = 0
         self.referencePoint = reference_point
         self.hyperVolumes = []
         self.IGDs = []
-        self.outputDirectory = outputDirectory
+        self.AlgorithmName = AlgorithmName
+        self._createSubfolder()
+        self.fileValue = self._getFileValue()
 
     def update(self, *args, **kwargs):
         self.evaluations = kwargs['EVALUATIONS']
@@ -70,6 +72,31 @@ class StoppingByEvaluationsCustom(TerminationCriterion):
             hv.is_minimization = True
             self.hyperVolumes.append(hv.compute(variables))
 
+            # TODO: Implement to IGD
+
+            if self.evaluations >= self.max_evaluations:
+                filename = 'Hist/' + str(self.AlgorithmName) + '/' + 'HV-' + str(self.fileValue) + '.txt'
+                with open(filename, 'w') as f:
+                    for hv in self.hyperVolumes:
+                        f.write(str(hv))
+                        f.write('\n')
     @property
     def is_met(self):
         return self.evaluations >= self.max_evaluations
+
+    def _createSubfolder(self):
+        newPath = 'Hist/' + str(self.AlgorithmName)
+        if not os.path.isdir(newPath):
+            os.makedirs(newPath)
+
+    def _getFileValue(self):
+        folderPath = 'Hist/' + str(self.AlgorithmName)
+        HVFilesValue = []
+        for file in os.listdir(folderPath):
+            if 'HV' in file:
+                HVFilesValue.append(int(file[3]))  # Given a file "HV-0.txt" the number will be saved.
+        if len(HVFilesValue) == 0:
+            return 0
+        else:
+            return max(HVFilesValue) + 1
+
