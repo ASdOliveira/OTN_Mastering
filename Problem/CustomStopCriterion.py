@@ -57,7 +57,7 @@ class StoppingByEvaluationsCustom(TerminationCriterion):
         self.IGDs = []
         self.AlgorithmName = AlgorithmName
         self._createSubfolder()
-        self.fileValue = self._getFileValue()
+        # self.InitialFlag = False
 
     def update(self, *args, **kwargs):
         self.evaluations = kwargs['EVALUATIONS']
@@ -75,7 +75,8 @@ class StoppingByEvaluationsCustom(TerminationCriterion):
             # TODO: Implement to IGD
 
             if self.evaluations >= self.max_evaluations:
-                filename = 'Hist/' + str(self.AlgorithmName) + '/' + 'HV-' + str(self.fileValue) + '.txt'
+                fileValue = self._getFileValue()
+                filename = 'Hist/' + str(self.AlgorithmName) + '/' + 'HV-' + str(fileValue) + '.txt'
                 with open(filename, 'w') as f:
                     for hv in self.hyperVolumes:
                         f.write(str(hv))
