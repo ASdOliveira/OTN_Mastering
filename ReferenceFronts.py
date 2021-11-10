@@ -21,7 +21,7 @@ solutionsResult = []
 frontResult = 0
 timesToRun = 30
 
-log_front = Log("front_4_Services")
+log_front = Log("front_8_Services")
 
 Net = Network(folderName="Topologia1")
 
@@ -49,7 +49,7 @@ for executions in range(timesToRun):
     solutions = algorithm.get_result()
 
     for solution in solutions:
-        if not solution.objectives[1] >= 1.0:
+        if not solution.objectives[1] >= 1.3:
             solutionsResult.append(solution)
 
     if executions == (timesToRun - 1):
