@@ -95,7 +95,9 @@ class StoppingByEvaluationsCustom(TerminationCriterion):
         HVFilesValue = []
         for file in os.listdir(folderPath):
             if 'HV' in file:
-                HVFilesValue.append(int(file[3]))  # Given a file "HV-0.txt" the number will be saved.
+                split_first = file.split('-')
+                final_split = split_first[1].split('.')
+                HVFilesValue.append(int(final_split[0]))  # Given a file "HV-0.txt" the number 0 will be saved.
         if len(HVFilesValue) == 0:
             return 0
         else:
