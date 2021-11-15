@@ -1,5 +1,5 @@
 import os
-
+import matplotlib.pyplot as plt
 
 def generateGraphs(folder):
     result = {}
@@ -14,9 +14,35 @@ def generateGraphs(folder):
         AVGValues = getMeanValues(fileContents)
         algorithmName = dirname.split('\\')[1]
         result[algorithmName] = AVGValues
+    createGraph(result)
+    createGraphWithMultipleData(result)
 
+def createGraph(InputData):
+    for key in InputData.keys():
+        Yvalues = InputData[key]
+        if str(key).upper() == 'MOEAD' or str(key).upper() == 'MOCELL':
+            Xvalues = list(range(1, len(Yvalues) + 1))
+        else:
+            Xvalues = [item*20 for item in range(1, len(Yvalues) + 1)]  # 20 = populationSize
+        plt.ylabel('HyperVolume')
+        plt.xlabel('Iteration Number')
+        plt.title(str(key))
+        plt.plot(Xvalues, Yvalues)
+        plt.show()
 
-
+def createGraphWithMultipleData(InputData):
+    for key in InputData.keys():
+        Yvalues = InputData[key]
+        if str(key).upper() == 'MOEAD' or str(key).upper() == 'MOCELL':
+            Xvalues = list(range(1, len(Yvalues) + 1))
+        else:
+            Xvalues = [item*20 for item in range(1, len(Yvalues) + 1)]  # 20 = populationSize
+        plt.plot(Xvalues, Yvalues, label = str(key))
+    plt.ylabel('HyperVolume')
+    plt.xlabel('Iteration Number')
+    plt.title('HyperVolume Comparison')
+    plt.legend()
+    plt.show()
 
 def readFile(folder, file):
     path = os.path.join(folder, file)
