@@ -17,6 +17,7 @@ def _calculateInterfacesQuantity(chromosome):
     InterfacesQuantities = 0
     for gene in chromosome:
         InterfacesQuantities += (round(gene) * 2)
+    print("Interface Amount calculated")
     return InterfacesQuantities
 
 
@@ -28,17 +29,10 @@ def _calculateTIRF(network, chromosome):
     TELinks = []
     TIRF = 0.0
 
-    for linkBundle in Network.LinkBundles:
-        TELinks.append(TELink(NodeFrom=linkBundle.NodeFrom,
-                              NodeTo=linkBundle.NodeTo,
-                              LinkBundleId=linkBundle.id))
-
     # At This point the Network Graph has the Network modeled on TELink rather than Link bundles
-    _convertToGraph(chromosome, TELinks, NetworkGraph)
+    _convertToGraph(chromosome, Network.LinkBundles, NetworkGraph)
 
-    NetworkGraphAuxiliary = deepcopy(NetworkGraph)
-
-    IsAllServicesAllocated = _allocateServicesAndProtection(Network, NetworkGraph, NetworkGraphAuxiliary)
+    IsAllServicesAllocated = _allocateServicesAndProtection(Network, NetworkGraph)
 
     if not IsAllServicesAllocated:
         # TODO: Check this penalty
@@ -46,7 +40,7 @@ def _calculateTIRF(network, chromosome):
         return TIRF
 
     # At this point the Network is allocated with work and protection routes.
-    TIRF = _GetTIRF(Network, NetworkGraphAuxiliary)
+    TIRF = _GetTIRF(Network, NetworkGraph)
 
     # DEBUG
     # print("NodeFrom", "NodeTo", "MainRoute", "ProtectionRoute", sep=" | ")
@@ -55,49 +49,53 @@ def _calculateTIRF(network, chromosome):
     return TIRF
 
 
-def _convertToGraph(chromosome, TELinks, NetworkGraph):
+def _convertToGraph(chromosome, LinkBundles, NetworkGraph):
     count = 0
+    TELinks = []
+    for linkBundle in LinkBundles:
+        TELinks.append(TELink(NodeFrom=linkBundle.NodeFrom,
+                              NodeTo=linkBundle.NodeTo,
+                              LinkBundleId=linkBundle.id))
+
     for gene in chromosome:
         TELinkAux = TELinks[count]
         for x in range(round(gene)):
-            NetworkGraph.add_edge(TELinkAux.NodeFrom, TELinkAux.NodeTo, key=TELinkAux.LinkBundleId + "_" + str(x),
-                                  link=TELink(TELinkAux.NodeFrom, TELinkAux.NodeTo, TELinkAux.LinkBundleId))
+            NetworkGraph.add_edge(TELinkAux.NodeFrom, TELinkAux.NodeTo, key=TELinkAux.LinkBundleId + "_" + str(x))
         count += 1
+    print("Convertion to graph done")
 
 
-def _allocateServicesAndProtection(NetworkCopy, NetworkGraph, NetworkGraphAuxiliary):
+def _allocateServicesAndProtection(NetworkCopy, NetworkGraph):
     IsServicesAllocated = True
 
     for service in NetworkCopy.Services:
-        edges = _getShortestPathInMultigraph(NetworkGraphAuxiliary, service.NodeFrom, service.NodeTo)
+        edges = _getShortestPathInMultigraph(NetworkGraph, service.NodeFrom, service.NodeTo)
 
         # allocate service
         if len(edges) == 0:
             IsServicesAllocated = False
             break
 
-        _allocate(edges, NetworkGraph, NetworkGraphAuxiliary, service.MainRoute)
+        _allocate(edges, NetworkGraph, service.MainRoute)
 
         # Allocate Protection
         if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP) or (
                 service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
 
-            Aux = deepcopy(NetworkGraphAuxiliary)
+            Aux = deepcopy(NetworkGraph)
             edges = _getDisjointPath(Aux, service.NodeFrom, service.NodeTo, service.MainRoute)
 
             if len(edges) == 0:
                 IsServicesAllocated = False
                 break
 
-            _allocate(edges, NetworkGraph, NetworkGraphAuxiliary, service.ProtectionRoute)
-
+            _allocate(edges, NetworkGraph, service.ProtectionRoute)
+    print("Services and protection Allocated")
     return IsServicesAllocated
 
 
-def _allocate(edges, NetworkGraph, NetworkGraphAuxiliary, serviceToAppend):
+def _allocate(edges, NetworkGraphAuxiliary, serviceToAppend):
     for edge in edges:
-        TELINK = (NetworkGraph.get_edge_data(edge[0], edge[1])[edge[2]]).get("link")
-        TELINK.IsBusy = True
         serviceToAppend.append(edge[2])
         NetworkGraphAuxiliary.remove_edge(edge[0], edge[1], edge[2])
 
@@ -106,10 +104,14 @@ def _getShortestPathInMultigraph(G, Source, Target):
     edges = []
     if not (G.has_node(Source) and G.has_node(Target)):
         return edges
-    all_edge_paths = nx.all_simple_edge_paths(G, Source, Target)
-    sorted_all_edge_paths = sorted(list(all_edge_paths), key=lambda a: len(a))
-    if len(sorted_all_edge_paths) > 0:
-        edges = sorted_all_edge_paths[0]
+
+    try:
+        pathLength = nx.shortest_path_length(G, Source, Target)
+        all_edge_paths = nx.all_simple_edge_paths(G, Source, Target, pathLength)
+        edges = next(all_edge_paths)
+        # edges = min(all_edge_paths, key=len)
+    except:
+        edges = []
     return edges
 
 
@@ -128,7 +130,7 @@ def _getDisjointPath(G, Source, Target, PathToAvoid):
 def _GetTIRF(NetworkCopy, NetworkGraphAuxiliary):
     IR = 0.0
     TTR = 0.0
-
+    print("starting to calculate TIRF")
     for failureScenario in NetworkCopy.FailureScenarios:
         NetworkGraphCopy = deepcopy(NetworkGraphAuxiliary)
 
