@@ -13,14 +13,12 @@ startTime = timeit.default_timer()
 # log.log("teste")
 # log.save()
 
-Net = Network(folderName="Topologia1")
-#chromosomeTest = [5,  5,5, 5, 5, 5, 5] # TODO: sizeof linkBundles!!
-#chromosomeTest = [4, 4, 4, 4, 4, 4, 4] # TODO: sizeof linkBundles!!
-#chromosomeTest = [3, 3, 3, 3, 3, 3, 3] # TODO: sizeof linkBundles!!
-
-chromosomeTest = [2, 2, 3, 3, 2, 2, 2] # TODO: sizeof linkBundles!!
-#chromosomeTest = [2, 2, 3, 2, 2, 2, 2] # TODO: sizeof linkBundles!!
-#chromosomeTest = [2, 2, 2, 2, 2, 2, 2] # TODO: sizeof linkBundles!!
+Net = Network(folderName="Topologia2")
+chromosomeTest = [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+                   50, 50, 50, 50, 50, 50, 50, 50, 50,50, 50, 50, 50, 50, 50, 50, 50] # TODO: sizeof linkBundles!!
+#chromosomeTest = [2, 35, 17, 18, 53, 36, 39, 26, 41, 27, 14, 35, 38, 21, 30, 36, 5, 18, 53, 44, 45, 35, 35, 48, 49, 29, 14, 28, 47, 48, 26, 7]
+#chromosomeTest = [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
+#chromosomeTest = [2, 2, 2, 2, 2, 2, 2]
 Fitness = evaluateNetwork(Net, chromosomeTest)
 
 stopTime = timeit.default_timer()
