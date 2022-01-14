@@ -2,6 +2,8 @@ from copy import deepcopy
 import networkx as nx
 from Models.TELink import TELink
 from Utils.ServiceEnum import ServiceEnum
+from joblib import Parallel, delayed
+import multiprocessing
 
 
 def evaluateNetwork(network, chromosome):
@@ -17,7 +19,6 @@ def _calculateInterfacesQuantity(chromosome):
     InterfacesQuantities = 0
     for gene in chromosome:
         InterfacesQuantities += (round(gene) * 2)
-    print("Interface Amount calculated")
     return InterfacesQuantities
 
 
@@ -62,7 +63,7 @@ def _convertToGraph(chromosome, LinkBundles, NetworkGraph):
         for x in range(round(gene)):
             NetworkGraph.add_edge(TELinkAux.NodeFrom, TELinkAux.NodeTo, key=TELinkAux.LinkBundleId + "_" + str(x))
         count += 1
-    print("Convertion to graph done")
+
 
 
 def _allocateServicesAndProtection(NetworkCopy, NetworkGraph):
@@ -90,7 +91,6 @@ def _allocateServicesAndProtection(NetworkCopy, NetworkGraph):
                 break
 
             _allocate(edges, NetworkGraph, service.ProtectionRoute)
-    print("Services and protection Allocated")
     return IsServicesAllocated
 
 
@@ -106,10 +106,17 @@ def _getShortestPathInMultigraph(G, Source, Target):
         return edges
 
     try:
-        pathLength = nx.shortest_path_length(G, Source, Target)
-        all_edge_paths = nx.all_simple_edge_paths(G, Source, Target, pathLength)
-        edges = next(all_edge_paths)
-        # edges = min(all_edge_paths, key=len)
+        # pathLength = nx.shortest_path_length(G, Source, Target)
+        Node_path = nx.shortest_path(G, Source, Target)
+        if len(Node_path) == 0:
+            return edges
+        for index in range(len(Node_path) - 1):
+            edge_path = nx.all_simple_edge_paths(G, Node_path[index], Node_path[index + 1], 1)
+            edges.append(next(edge_path)[0])
+
+        # all_edge_paths = nx.all_simple_edge_paths(G, Source, Target, pathLength)
+        # edges = next(all_edge_paths)
+
     except:
         edges = []
     return edges
@@ -127,49 +134,64 @@ def _getDisjointPath(G, Source, Target, PathToAvoid):
     return DisjointPath
 
 
+def _CalcTIRF(NetworkCopy, NetworkGraphAuxiliary, failureScenario):
+    IR = 0.0
+    TTR = 0.0
+    NetworkGraphCopy = deepcopy(NetworkGraphAuxiliary)
+
+    NetworkGraphCopy = _removeEdgesFromLinkBundle(NetworkGraphCopy, failureScenario)
+
+    for service in NetworkCopy.Services:
+        if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_RESTORATION) or (
+                service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
+
+            IsScenarioFound1 = False
+            IsScenarioFound2 = False
+
+            for telink in service.MainRoute:
+                if (failureScenario[0] + "_") in telink:
+                    IsScenarioFound1 = True
+                    break
+                if (failureScenario[1] + "_") in telink:
+                    IsScenarioFound2 = True
+                    break
+            needRestoration = IsScenarioFound2 or IsScenarioFound1
+
+            if needRestoration:
+                # Let's allocate
+                edges = _getShortestPathInMultigraph(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
+
+                TTR += 1.0
+                if len(edges) == 0:  # There isn't any route available
+                    IR += 1.0
+                else:
+                    #edgeToBeRemoved = []
+                    # for edge in edges:
+                    #     edgeToBeRemoved.append((edge[0], edge[1], edge[2]))
+                    NetworkGraphCopy.remove_edges_from(edges)
+
+    return [IR, TTR]
+
+
 def _GetTIRF(NetworkCopy, NetworkGraphAuxiliary):
     IR = 0.0
     TTR = 0.0
-    print("starting to calculate TIRF")
-    for failureScenario in NetworkCopy.FailureScenarios:
-        NetworkGraphCopy = deepcopy(NetworkGraphAuxiliary)
+    results = []
+    # NetworkGraphCopy = deepcopy(NetworkGraphAuxiliary)
 
-        NetworkGraphCopy = _removeEdgesFromLinkBundle(NetworkGraphCopy, failureScenario)
+    if len(NetworkCopy.LinkBundles) >= 10:
+        with Parallel(n_jobs=-1) as parallel:
+            results = parallel(
+                delayed(_CalcTIRF)(NetworkCopy, NetworkGraphAuxiliary, fs) for fs in NetworkCopy.FailureScenarios)
+    else:
+        index = 0
+        for failureScenarios in NetworkCopy.FailureScenarios:
+            results.append(_CalcTIRF(NetworkCopy, NetworkGraphAuxiliary, failureScenarios))
+            index += 1
 
-        for service in NetworkCopy.Services:
-            if (service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_RESTORATION) or (
-                    service.ServiceType == ServiceEnum.MAIN_ROUTE_AND_BACKUP_AND_RESTORATION):
-
-                needRestoration = False
-                # if len(service.MainRoute) == 1:
-                #     for LB in failureScenario:
-                #         if needRestoration:
-                #             break
-                #         if LB in service.MainRoute[0]:
-                #             needRestoration = True
-                #             break
-                # else:
-                IsScenarioFound1 = False
-                IsScenarioFound2 = False
-
-                for telink in service.MainRoute:
-                    if failureScenario[0] in telink:
-                        IsScenarioFound1 = True
-                    if failureScenario[1] in telink:
-                        IsScenarioFound2 = True
-                needRestoration = IsScenarioFound2 or IsScenarioFound1
-
-                if needRestoration:
-                    # Let's allocate
-                    edges = _getShortestPathInMultigraph(NetworkGraphCopy, service.NodeFrom, service.NodeTo)
-
-                    TTR += 1.0
-                    if len(edges) == 0:  # There isn't any route available
-                        IR += 1.0
-
-                    for edge in edges:
-                        NetworkGraphCopy.remove_edge(edge[0], edge[1], edge[2])
-
+    for result in results:
+        IR += result[0]
+        TTR += result[1]
     return float(IR / TTR)
 
 
@@ -178,7 +200,7 @@ def _removeEdgesFromLinkBundle(Graph, LinkBundlesToRemove):
     edges = Graph.edges(keys=True)
     for linkBundle in LinkBundlesToRemove:
         for (i, j, k) in edges:
-            if linkBundle in k:
+            if (linkBundle + "_") in k:
                 edgesToBeRemoved.append((i, j, k))
 
     Graph.remove_edges_from(edgesToBeRemoved)
