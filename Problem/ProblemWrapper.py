@@ -1,7 +1,7 @@
 from jmetal.core.problem import IntegerProblem, FloatProblem
 from jmetal.core.solution import IntegerSolution, FloatSolution
 from Problem import Evaluation
-
+from Problem.Config import *
 
 class OTNProblem(IntegerProblem):
     def __init__(self, network, number_of_variables):
@@ -13,8 +13,8 @@ class OTNProblem(IntegerProblem):
         self.obj_directions = [self.MINIMIZE, self.MINIMIZE]
         self.obj_labels = ['InterfacesQuantities', 'TIRF']
 
-        self.lower_bound = number_of_variables * [0]
-        self.upper_bound = number_of_variables * [8]
+        self.lower_bound = number_of_variables * [LOWER_BOUND]
+        self.upper_bound = number_of_variables * [UPPER_BOUND]
 
         self.network = network
 
@@ -41,8 +41,8 @@ class OTNProblemFloat(FloatProblem):
         self.obj_directions = [self.MINIMIZE, self.MINIMIZE]
         self.obj_labels = ['InterfacesQuantities', 'TIRF']
 
-        self.lower_bound = number_of_variables * [0]
-        self.upper_bound = number_of_variables * [8]
+        self.lower_bound = number_of_variables * [LOWER_BOUND]
+        self.upper_bound = number_of_variables * [UPPER_BOUND]
 
         self.network = network
 

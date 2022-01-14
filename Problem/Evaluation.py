@@ -1,6 +1,7 @@
 from copy import deepcopy
 import networkx as nx
 from Models.TELink import TELink
+from Problem.Config import *
 from Utils.ServiceEnum import ServiceEnum
 from joblib import Parallel, delayed
 import multiprocessing
@@ -37,7 +38,7 @@ def _calculateTIRF(network, chromosome):
 
     if not IsAllServicesAllocated:
         # TODO: Check this penalty
-        TIRF = 2.0
+        TIRF = PENALTY_VALUE
         return TIRF
 
     # At this point the Network is allocated with work and protection routes.
@@ -179,8 +180,8 @@ def _GetTIRF(NetworkCopy, NetworkGraphAuxiliary):
     results = []
     # NetworkGraphCopy = deepcopy(NetworkGraphAuxiliary)
 
-    if len(NetworkCopy.LinkBundles) >= 10:
-        with Parallel(n_jobs=-1) as parallel:
+    if WILL_USE_PARALLEL_PROCESSING:
+        with Parallel(n_jobs=CORES_TO_USE) as parallel:
             results = parallel(
                 delayed(_CalcTIRF)(NetworkCopy, NetworkGraphAuxiliary, fs) for fs in NetworkCopy.FailureScenarios)
     else:

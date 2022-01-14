@@ -19,26 +19,28 @@ BestTirf = []
 BestInterfaceQuantity = []
 solutionsResult = []
 frontResult = 0
-timesToRun = 30
+timesToRun = 1
 
-log_front = Log("front_8_Services")
+log_front = Log("front_140_Services")
 
-Net = Network(folderName="Topologia1")
+Net = Network(folderName="Topologia2")
 
 for executions in range(timesToRun):
     print("Interation number:", executions)
 
     problem = OTNProblem(Net, len(Net.LinkBundles))
-    max_evaluations = 10000
+    max_evaluations = 1000
     # stopCriterion = StoppingByEvaluationsCustom(max_evaluations, [200, 2.1])  # To topology 1, 200 is enough
 
     algorithm = NSGAII(
         problem=problem,
-        population_size=1200,
-        offspring_population_size=600,
+        population_size=20,
+        offspring_population_size=20,
         mutation=IntegerPolynomialMutation(probability=0.05, distribution_index=20),
         crossover=IntegerSBXCrossover(probability=0.3, distribution_index=20),
-        termination_criterion=StoppingByEvaluations(max_evaluations=max_evaluations)
+        termination_criterion=StoppingByEvaluationsCustom(max_evaluations=max_evaluations,
+                                                                          reference_point=[5000, 2.1],
+                                                                          AlgorithmName='Reference')
         # termination_criterion=stopCriterion
     )
 
@@ -51,6 +53,7 @@ for executions in range(timesToRun):
     for solution in solutions:
         if not solution.objectives[1] >= 1.3:
             solutionsResult.append(solution)
+            print(len(solutionsResult))
 
     if executions == (timesToRun - 1):
         frontResult = get_non_dominated_solutions(solutionsResult)

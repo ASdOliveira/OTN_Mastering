@@ -1,6 +1,8 @@
 # this file should remove the punishment values
 import os
 
+from Problem.Config import PENALTY_VALUE
+
 
 def RemovePenalty(input_dir: str):
     for dirname, _, filenames in os.walk(input_dir):
@@ -32,7 +34,7 @@ def getSolutionsToBeFiltered(filename):
     with open(filename) as file:
         for line in file:
             vector = [float(x) for x in line.split()]
-            if vector[1] == 2.0:
+            if vector[1] == PENALTY_VALUE:
                 linesFound.append(lineIndex)
             lineIndex += 1
 
