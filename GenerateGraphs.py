@@ -1,6 +1,9 @@
 import os
 import matplotlib.pyplot as plt
 
+from Problem.Config import POPULATION_SIZE
+
+
 def generateGraphs(folder):
     result = {}
     for dirname, _, filenames in os.walk(folder):
@@ -23,7 +26,7 @@ def createGraph(InputData):
         if str(key).upper() == 'MOEAD' or str(key).upper() == 'MOCELL':
             Xvalues = list(range(1, len(Yvalues) + 1))
         else:
-            Xvalues = [item*20 for item in range(1, len(Yvalues) + 1)]  # 20 = populationSize
+            Xvalues = [item*POPULATION_SIZE for item in range(1, len(Yvalues) + 1)]
         plt.ylabel('HyperVolume')
         plt.xlabel('Iteration Number')
         plt.title(str(key))
@@ -36,7 +39,7 @@ def createGraphWithMultipleData(InputData):
         if str(key).upper() == 'MOEAD' or str(key).upper() == 'MOCELL':
             Xvalues = list(range(1, len(Yvalues) + 1))
         else:
-            Xvalues = [item*20 for item in range(1, len(Yvalues) + 1)]  # 20 = populationSize
+            Xvalues = [item*POPULATION_SIZE for item in range(1, len(Yvalues) + 1)]
         plt.plot(Xvalues, Yvalues, label = str(key))
     plt.ylabel('HyperVolume')
     plt.xlabel('Iteration Number')

@@ -53,7 +53,6 @@ for executions in range(timesToRun):
     for solution in solutions:
         if not solution.objectives[1] >= 1.3:
             solutionsResult.append(solution)
-            print(len(solutionsResult))
 
     if executions == (timesToRun - 1):
         frontResult = get_non_dominated_solutions(solutionsResult)
