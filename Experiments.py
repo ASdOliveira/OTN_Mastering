@@ -1,5 +1,6 @@
 from jmetal.algorithm.multiobjective import SPEA2, HYPE, SMPSO, MOCell, MOEAD, OMOPSO
 from jmetal.algorithm.multiobjective.nsgaii import NSGAII
+from jmetal.algorithm.multiobjective.nsgaiii import NSGAIII, UniformReferenceDirectionFactory
 from jmetal.core.quality_indicator import GenerationalDistance, EpsilonIndicator, HyperVolume, \
     InvertedGenerationalDistance
 from jmetal.core.solution import IntegerSolution
@@ -66,6 +67,24 @@ def configure_experiment(problems: dict, n_run: int):
             )
             jobs.append(
                 Job(
+                    algorithm=NSGAIII(
+                        problem=problem,
+                        population_size=POPULATION_SIZE,
+                        mutation=IntegerPolynomialMutation(probability=0.05, distribution_index=20),
+                        crossover=IntegerSBXCrossover(probability=0.3, distribution_index=20),
+                        reference_directions=UniformReferenceDirectionFactory(2, n_points=91),
+                        termination_criterion=StoppingByEvaluationsCustom(max_evaluations=max_evaluations,
+                                                                          reference_point=REFERENCE_POINT,
+                                                                          AlgorithmName='NSGAIII')
+                        # termination_criterion=stopCriterion
+                    ),
+                    algorithm_tag='NSGAIII',
+                    problem_tag=problem_tag,
+                    run=run,
+                )
+            )
+            jobs.append(
+                Job(
                     algorithm=SPEA2(
                         problem=problem,
                         population_size=POPULATION_SIZE,
@@ -114,41 +133,41 @@ def configure_experiment(problems: dict, n_run: int):
                     run=run,
                 )
             )
-            # jobs.append(
-            #     Job(
-            #         algorithm=OMOPSO(
-            #             problem=problem,
-            #             swarm_size=swarm_size,
-            #             epsilon=0.0075,
-            #             uniform_mutation=UniformMutation(probability=0.05, perturbation=0.5),
-            #             non_uniform_mutation=NonUniformMutation(mutation_probability, perturbation=0.5,
-            #                                                     max_iterations=int(max_evaluations / swarm_size)),
-            #             leaders=CrowdingDistanceArchive(10),
-            #             termination_criterion=StoppingByEvaluationsCustom(max_evaluations=max_evaluations,
-            #                                                               reference_point=REFERENCE_POINT,
-            #                                                               AlgorithmName='OMOPSO')
-            #         ),
-            #         algorithm_tag='OMOPSO',
-            #         problem_tag=problem_tag,
-            #         run=run,
-            #     )
-            # )
-            # jobs.append(
-            #     Job(
-            #         algorithm=SMPSO(
-            #             problem=problem,
-            #             swarm_size=POPULATION_SIZE,
-            #             mutation=PolynomialMutation(probability=0.05, distribution_index=20),
-            #             leaders=CrowdingDistanceArchive(20),
-            #             termination_criterion=StoppingByEvaluationsCustom(max_evaluations=max_evaluations,
-            #                                                               reference_point=REFERENCE_POINT,
-            #                                                               AlgorithmName='SMPSO')
-            #         ),
-            #         algorithm_tag='SMPSO',
-            #         problem_tag=problem_tag,
-            #         run=run,
-            #     )
-            # )
+            jobs.append(
+                Job(
+                    algorithm=OMOPSO(
+                        problem=problem,
+                        swarm_size=swarm_size,
+                        epsilon=0.0075,
+                        uniform_mutation=UniformMutation(probability=0.05, perturbation=0.5),
+                        non_uniform_mutation=NonUniformMutation(mutation_probability, perturbation=0.5,
+                                                                max_iterations=int(max_evaluations / swarm_size)),
+                        leaders=CrowdingDistanceArchive(10),
+                        termination_criterion=StoppingByEvaluationsCustom(max_evaluations=max_evaluations,
+                                                                          reference_point=REFERENCE_POINT,
+                                                                          AlgorithmName='OMOPSO')
+                    ),
+                    algorithm_tag='OMOPSO',
+                    problem_tag=problem_tag,
+                    run=run,
+                )
+            )
+            jobs.append(
+                Job(
+                    algorithm=SMPSO(
+                        problem=problem,
+                        swarm_size=POPULATION_SIZE,
+                        mutation=PolynomialMutation(probability=0.05, distribution_index=20),
+                        leaders=CrowdingDistanceArchive(20),
+                        termination_criterion=StoppingByEvaluationsCustom(max_evaluations=max_evaluations,
+                                                                          reference_point=REFERENCE_POINT,
+                                                                          AlgorithmName='SMPSO')
+                    ),
+                    algorithm_tag='SMPSO',
+                    problem_tag=problem_tag,
+                    run=run,
+                )
+            )
     return jobs
 
 
@@ -166,7 +185,7 @@ if __name__ == '__main__':
     # Reference fronts is the folder where is the reference to be compared with.
     generate_summary_from_experiment(
         input_dir=output_directory,
-        # reference_fronts='C:\\Users\\aryss\\Documents\\Repositories\\OTN_Mastering\\Output\\CT3\\8 services',
-        # quality_indicators=[InvertedGenerationalDistance(), EpsilonIndicator(), HyperVolume(REFERENCE_POINT)]
-        quality_indicators = [HyperVolume(REFERENCE_POINT)]
+        reference_fronts='C:\\Users\\aryss\\Documents\\Repositories\\OTN_Mastering\\Output\\CT3\\8 services',
+        quality_indicators=[InvertedGenerationalDistance(), EpsilonIndicator(), HyperVolume(REFERENCE_POINT)]
+        #quality_indicators = [HyperVolume(REFERENCE_POINT)]
     )
