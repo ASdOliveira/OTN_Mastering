@@ -20,7 +20,7 @@ def generateParetoFront(folder):
             SolutionList = mergeSolutions(solution_list)
             paretoFront = get_non_dominated_solutions(SolutionList)
             result[algorithm] = obtainParetoFront(paretoFront)
-    createGraph(result)
+    #createGraph(result)
     createGraphWithMultipleData(result)
 
 
@@ -51,7 +51,7 @@ def createGraph(InputData):
         Xvalues = getAxisValue(InputData[key], 1)
 
         plt.ylabel('TIRF')
-        plt.xlabel('Interfaces')
+        plt.xlabel('Quantidade de Interfaces')
         plt.title(str(key))
         plt.scatter(Xvalues, Yvalues, s=5)
         plt.show()
@@ -65,7 +65,7 @@ def getAxisValue(InputList, position):
 
 
 def createGraphWithMultipleData(InputData):
-    markers = ["o", "v", "^", "s", "*", "d"]
+    markers = ["o", "v", "^", "s", "*", "d", "^"]
     markerIndex = 0
     for key in InputData.keys():
         Yvalues = getAxisValue(InputData[key], 0)
@@ -73,7 +73,7 @@ def createGraphWithMultipleData(InputData):
         plt.scatter(Xvalues, Yvalues, s=5, label=str(key), marker=markers[markerIndex])
         markerIndex += 1
     plt.ylabel('TIRF')
-    plt.xlabel('Interface')
+    plt.xlabel('Quantidade de Interfaces')
     plt.title('Pareto front comparison')
     plt.legend()
     plt.show()
