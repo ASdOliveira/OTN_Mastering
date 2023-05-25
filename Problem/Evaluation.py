@@ -10,9 +10,15 @@ import multiprocessing
 def evaluateNetwork(network, chromosome):
     InterfacesQuantities = _calculateInterfacesQuantity(chromosome)
     TIRF = _calculateTIRF(network, chromosome)
+    efficiency = EfficiencyMetering(InterfacesQuantities)
 
-    return [InterfacesQuantities, TIRF]
+    return [InterfacesQuantities, TIRF, efficiency]
 
+def EfficiencyMetering(InterfacesQuantities):
+    Nc = 500
+    Pots = ((InterfacesQuantities)/12)  * 50
+    Plc = 360
+    return (Nc + Pots + Plc)/100
 
 def _calculateInterfacesQuantity(chromosome):
     """The interface quantity is equal to TeLink x 2,
